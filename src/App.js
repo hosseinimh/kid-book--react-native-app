@@ -3,7 +3,7 @@ import {Provider} from 'react-redux';
 import {NavigationContainer} from '@react-navigation/native';
 
 import {MainStack} from './navigation';
-import configureStore from 'storage/state/store';
+import configureStore from './storage/state/store';
 
 const store = configureStore();
 

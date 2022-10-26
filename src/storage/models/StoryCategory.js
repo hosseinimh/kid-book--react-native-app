@@ -1,4 +1,5 @@
-import SqliteConnection from './SqliteConnection';
+import {utils} from '../../utils';
+import SqliteConnection, {PAGE_ITEMS} from './SqliteConnection';
 
 const sqlite = new SqliteConnection(createTableSqls);
 const tblName = 'tbl_story_categories';
@@ -13,15 +14,19 @@ function createTableSqls() {
 class StoryCategory {
   constructor() {}
 
-  getItem = async id => {
-    let items = await sqlite.select(`SELECT * FROM ${tblName} WHERE id=${id}`);
+  getItemByServerId = async serverStoryCategoryId => {
+    let items = await sqlite.select(
+      `SELECT * FROM ${tblName} WHERE server_story_category_id=${serverStoryCategoryId}`,
+    );
 
-    return items.length > 0 ? items[0] : null;
+    return items?.length > 0 ? items[0] : null;
   };
 
-  getItems = async () => {
+  getItems = async (pageNumber = 1) => {
     return await sqlite.select(
-      `SELECT * FROM ${tblName} ORDER BY created_at,id DESC`,
+      `SELECT * FROM ${tblName} ORDER BY created_at,id DESC LIMIT ${
+        (pageNumber - 1) * PAGE_ITEMS
+      },${PAGE_ITEMS}`,
     );
   };
 
@@ -29,8 +34,12 @@ class StoryCategory {
     let dateTime = utils.getDateTime();
 
     return await sqlite.execute(
-      `INSERT INTO ${tblName} (server_story_category_id,title,created_at,updated_at) VALUES (null,${serverCategoryId},'${title}','${dateTime}',null)`,
+      `INSERT INTO ${tblName} (server_story_category_id,title,created_at,updated_at) VALUES (${serverCategoryId},'${title}','${dateTime}',null)`,
     );
+  };
+
+  createTable = async () => {
+    return await sqlite.handleCreateTable();
   };
 
   dropTable = async () => {

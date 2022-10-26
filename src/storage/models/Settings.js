@@ -13,14 +13,8 @@ function createTableSqls() {
   return {dropSql, createSql};
 }
 
-async function handleGet(create = true) {
+async function handleGet() {
   let items = await sqlite.select(`SELECT * FROM ${tblName} ORDER BY id DESC`);
-
-  if (items === 0 && create) {
-    await sqlite.handleCreateTable();
-
-    items = await sqlite.select(`SELECT * FROM ${tblName} ORDER BY id DESC`);
-  }
 
   return items?.length > 0 ? items[0] : null;
 }
@@ -37,7 +31,7 @@ class Settings {
 
     await this.insert();
 
-    return await handleGet(false);
+    return await handleGet();
   };
 
   insert = async () => {
@@ -50,10 +44,15 @@ class Settings {
 
   updateToken = async token => {
     let dateTime = utils.getDateTime();
+    let sql = token
+      ? `UPDATE ${tblName} SET token='${token}',server_connected_at='${dateTime}',updated_at='${dateTime}'`
+      : `UPDATE ${tblName} SET token='${token}',server_connected_at=null,updated_at='${dateTime}'`;
 
-    return await sqlite.execute(
-      `UPDATE ${tblName} SET token='${token}',updated_at='${dateTime}'`,
-    );
+    return await sqlite.execute(sql);
+  };
+
+  createTable = async () => {
+    return await sqlite.handleCreateTable();
   };
 
   dropTable = async () => {

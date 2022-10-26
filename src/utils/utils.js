@@ -1,6 +1,10 @@
+import {PermissionsAndroid} from 'react-native';
+import RNFS from 'react-native-fs';
+
 import {TABS} from '../constants';
 import {TAB_SCREENS} from '../constants';
 import {tabScreens, tabLinks} from '../constants/strings';
+import {downloader as downloaderStrings} from '../constants/strings';
 
 const tabScreenTitle = tabScreen => {
   let title = tabScreens.home;
@@ -79,12 +83,61 @@ const en2faDigits = s =>
     ?.toString()
     .replace(/[0-9]/g, w => String.fromCharCode(w.charCodeAt(0) + 1728));
 
+const checkPermission = async () => {
+  const granted = await PermissionsAndroid.request(
+    PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+    {
+      title: downloaderStrings.permissionTitle,
+      message: downloaderStrings.permissionMessage,
+    },
+  );
+
+  if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+    return true;
+  }
+
+  return false;
+};
+
+const downloadAsync = async (url, filename) => {
+  try {
+    filename = `${RNFS.DocumentDirectoryPath}/${filename}`;
+    const result = await RNFS.downloadFile({
+      fromUrl: url,
+      toFile: filename,
+    }).promise;
+
+    if (result.bytesWritten > 0 && result.statusCode === 200) {
+      return filename;
+    }
+  } catch (error) {
+    console.warn('downloadAsync', error, url);
+  }
+
+  return null;
+};
+
+const deleteFile = async filename => {
+  try {
+    filename = `${RNFS.DocumentDirectoryPath}/${filename}`;
+    let result = await RNFS.exists(filename);
+
+    if (result) {
+      return await RNFS.unlink(filename);
+    }
+  } catch {}
+
+  return false;
+};
+
 const utils = {
   tabScreenTitle,
   tabText,
   getDateTime,
   isJsonString,
   en2faDigits,
+  downloadAsync,
+  deleteFile,
 };
 
 export default utils;

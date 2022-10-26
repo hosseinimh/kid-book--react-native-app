@@ -6,16 +6,14 @@ import images from '../../theme/images';
 import {TABS, THEMES} from '../../constants';
 import {setTabAction} from '../../storage/state/layout/layoutActions';
 import {utils} from '../../utils';
-import {useTheme} from 'hooks';
+import {useTheme} from '../../hooks';
 import {appVersion} from '../../../app-config.json';
-
-import useStyles from './useStyles';
 import {setThemeAction} from '../../storage/state/layout/layoutActions';
+import * as styles from '../../theme/style';
 
 const Sidebar = () => {
   const [currentTab, setCurrentTab] = useState(TABS.Home);
   const layoutState = useSelector(state => state.layoutReducer);
-  const styles = useStyles();
   const dispatch = useDispatch();
   const {colors} = useTheme();
 
@@ -78,8 +76,8 @@ const Sidebar = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.tabsContainer}>
+    <View style={styles.sidebarContainer}>
+      <View>
         {renderTabButton(TABS.Home, images.home)}
         {renderTabButton(
           TABS.Theme,
@@ -88,7 +86,9 @@ const Sidebar = () => {
         {renderTabButton(TABS.About, images.about)}
       </View>
       <View>
-        <Text style={styles.versionText}>{appVersion}</Text>
+        <Text style={[styles.versionText, {color: colors.sidebarText}]}>
+          {appVersion}
+        </Text>
       </View>
     </View>
   );

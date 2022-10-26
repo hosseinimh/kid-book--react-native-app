@@ -1,29 +1,8 @@
 import axios from 'axios';
+
 import {Settings} from '../storage/models';
 
-const createConfig = async () => {
-  const settings = new Settings();
-  let item = await settings.get();
-
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${item?.token}`,
-    },
-  };
-
-  return config;
-};
-
-const createConfigWithoutToken = async () => {
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  };
-
-  return config;
-};
+const TIMEOUT = 10000;
 
 const createFileConfig = () => {
   const config = {
@@ -35,22 +14,55 @@ const createFileConfig = () => {
   return config;
 };
 
-export const get = async (url, data = null) => {
-  const response = await axios.get(url, data, createConfig());
-
-  return response;
-};
-
 export const post = async (url, data = null) => {
-  const response = await axios.post(url, data, await createConfig());
+  let response = null;
+  const source = axios.CancelToken.source();
+  const settings = new Settings();
+  const item = await settings.get();
 
-  return response;
+  setTimeout(() => {
+    if (response === null) {
+      source.cancel();
+    }
+  }, TIMEOUT);
+
+  try {
+    response = await axios.post(url, data, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${item?.token}`,
+      },
+      cancelToken: source.token,
+    });
+
+    return response;
+  } catch (error) {
+    return null;
+  }
 };
 
 export const postWithoutToken = async (url, data = null) => {
-  const response = await axios.post(url, data, createConfigWithoutToken());
+  let response = null;
+  const source = axios.CancelToken.source();
 
-  return response;
+  setTimeout(() => {
+    if (response === null) {
+      source.cancel();
+    }
+  }, TIMEOUT);
+
+  try {
+    response = await axios.post(url, data, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      cancelToken: source.token,
+    });
+
+    return response;
+  } catch (error) {
+    return null;
+  }
 };
 
 export const postFile = async (url, data = null) => {

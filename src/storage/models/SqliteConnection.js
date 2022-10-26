@@ -1,7 +1,17 @@
 import SQLite from 'react-native-sqlite-storage';
 
 import {STORAGE} from '../../constants';
-import {Settings, User, Story, StoryCategory} from './index';
+import {
+  Settings,
+  User,
+  Story,
+  StoryCategory,
+  Author,
+  Speaker,
+  Translator,
+} from './index';
+
+export const PAGE_ITEMS = 10;
 
 class SqliteConnection {
   constructor(createTableSqls = null, openDatabase = true) {
@@ -16,6 +26,7 @@ class SqliteConnection {
           throw error;
         },
       );
+
       if (createTableSqls) {
         this.createTableSqls = createTableSqls;
       }
@@ -31,11 +42,17 @@ class SqliteConnection {
     const settings = new Settings();
     const story = new Story();
     const storyCategory = new StoryCategory();
+    const author = new Author();
+    const speaker = new Speaker();
+    const translator = new Translator();
 
     await user.dropTable();
     await settings.dropTable();
     await story.dropTable();
     await storyCategory.dropTable();
+    await author.dropTable();
+    await speaker.dropTable();
+    await translator.dropTable();
   }
 
   async handleCreateTable() {
@@ -49,23 +66,24 @@ class SqliteConnection {
 
   select(sql, parameters = []) {
     return new Promise((resolve, reject) => {
-      let items = [];
-
       this.db.transaction(tx => {
         tx.executeSql(
           sql,
           [...parameters],
           (_, results) => {
+            let items = [];
+
             for (let i = 0; i < results.rows.length; i++) {
               items.push(results.rows.item(i));
             }
 
-            resolve(items);
+            resolve(items.length > 0 ? items : null);
           },
           error => {
-            if (error?.code === 0) {
-              resolve(0);
-            }
+            console.warn('select', error);
+            // if (error?.code === 0) {
+            //   resolve(0);
+            // }
 
             resolve(null);
           },
@@ -81,11 +99,11 @@ class SqliteConnection {
           sql,
           [],
           (_, results) => {
-            resolve(results.rows.rowsAffected > 0 ? true : false);
+            resolve(results.rowsAffected > 0 ? true : false);
           },
           error => {
-            // console.log(error);
-            resolve(null);
+            console.warn('execute', error);
+            resolve(false);
           },
         );
       });

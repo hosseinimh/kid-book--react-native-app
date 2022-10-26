@@ -1,7 +1,25 @@
-import SplashScreen from './SplashScreen/SplashScreen';
-import BaseScreen from './_BaseScreen/BaseScreen';
-import HomeScreen from './HomeScreen/HomeScreen';
-import StoryScreen from './StoryScreen/StoryScreen';
-import SpeakerScreen from './SpeakerScreen/SpeakerScreen';
+import SplashScreen from './Splash/SplashScreen';
+import BaseScreen from './_Base/_BaseScreen/BaseScreen';
+import PanelScreen from './_Base/_PanelScreen/PanelScreen';
+import HomeScreen from './Home/HomeScreen/HomeScreen';
+import StoryScreen from './Stories/StoryScreen/StoryScreen';
+import AuthorScreen from './Authors/AuthorScreen/AuthorScreen';
+import AuthorsListScreen from './Authors/AuthorsListScreen/AuthorsListScreen';
+import TranslatorScreen from './Translators/TranslatorScreen/TranslatorScreen';
+import TranslatorsListScreen from './Translators/TranslatorsListScreen/TranslatorsListScreen';
+import SpeakerScreen from './Speakers/SpeakerScreen/SpeakerScreen';
+import SpeakersListScreen from './Speakers/SpeakersListScreen/SpeakersListScreen';
 
-export {SplashScreen, BaseScreen, HomeScreen, StoryScreen, SpeakerScreen};
+export {
+  SplashScreen,
+  BaseScreen,
+  PanelScreen,
+  HomeScreen,
+  StoryScreen,
+  AuthorScreen,
+  AuthorsListScreen,
+  TranslatorScreen,
+  TranslatorsListScreen,
+  SpeakerScreen,
+  SpeakersListScreen,
+};

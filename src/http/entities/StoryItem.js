@@ -9,8 +9,4 @@ export class StoryItem extends Entity {
   async getAll(storyId) {
     return await this.handlePost(API_URLS.FETCH_STORY_ITEMS + '/' + storyId);
   }
-
-  async get(id) {
-    return await this.handlePost(API_URLS.FETCH_STORY_ITEM + '/' + id);
-  }
 }

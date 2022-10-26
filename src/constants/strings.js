@@ -17,3 +17,23 @@ export const tabLinks = {
   theme: 'قالب',
   about: 'درباره',
 };
+
+export const homeTabScreen = {
+  notInitialized: 'دریافت داده از سرور با خطا مواجه شد.',
+  authors: 'نویسندگان',
+  translators: 'مترجمان',
+  speakers: 'گویندگان',
+  viewAll: 'نمایش همه',
+};
+
+export const authorScreen = {
+  _headerTitle: 'معرفی نویسنده',
+};
+
+export const translatorScreen = {
+  _headerTitle: 'معرفی مترجم',
+};
+
+export const speakerScreen = {
+  _headerTitle: 'معرفی گوینده',
+};

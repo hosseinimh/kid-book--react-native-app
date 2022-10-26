@@ -1,9 +1,6 @@
 import {Dimensions} from 'react-native';
 
-import {useTheme} from '../hooks';
-
 const {width, height} = Dimensions.get('window');
-const {colors} = useTheme();
 
 export const SIZES = {
   padding1: 30,
@@ -33,8 +30,6 @@ export const FONTS = {
 };
 
 export const screenContainer = {
-  flexGrow: 1,
-  backgroundColor: colors.background,
   position: 'absolute',
   top: 0,
   bottom: 0,
@@ -43,41 +38,222 @@ export const screenContainer = {
   paddingBottom: 20,
 };
 
-export const sidebarAnimatedContainer = {
-  backgroundColor: colors.primary,
-};
+export const sidebarAnimatedContainer = {};
 
 export const headerContainer = {
-  marginTop: SIZES.padding1,
-  paddingBottom: SIZES.padding3,
+  width: SIZES.width,
+  paddingVertical: SIZES.padding3,
   paddingHorizontal: SIZES.padding2,
   display: 'flex',
   flexDirection: 'row-reverse',
   justifyContent: 'flex-start',
   alignItems: 'center',
-  borderBottomColor: colors.border,
   borderBottomWidth: 1,
 };
 
 export const headerTextContainer = {
   paddingHorizontal: SIZES.padding3,
+  flex: 1,
 };
 
-export const headerText = [
-  FONTS.h3,
-  {
-    color: colors.text,
-  },
-];
+export const headerText = [FONTS.h3];
 
 export const closeHeaderIcon = {
   width: 20,
   height: 20,
-  tintColor: colors.text,
 };
 
 export const backHeaderIcon = {
   width: 20,
   height: 20,
-  tintColor: colors.text,
+};
+
+export const sidebarContainer = {
+  padding: 15,
+  marginTop: 35,
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
+  alignItems: 'flex-end',
+  flex: 1,
+};
+
+export const baseScreenContainer = {
+  flex: 1,
+};
+
+export const tabContainer = {
+  flexDirection: 'row-reverse',
+  alignItems: 'center',
+  paddingVertical: 8,
+  paddingLeft: 35,
+  paddingRight: 13,
+  borderRadius: 8,
+  marginTop: 15,
+  width: 180,
+};
+
+export const tabIcon = {width: 25, height: 25};
+
+export const tabText = [FONTS.body3, {fontSize: 15, paddingRight: 15}];
+
+export const versionText = [
+  FONTS.body4,
+  {
+    textAlign: 'right',
+  },
+];
+
+export const tabScreenContainer = {
+  flex: 1,
+};
+
+export const rowListItem = {
+  borderRadius: 8,
+  marginLeft: 15,
+  width: SIZES.width / 2 - SIZES.padding1 - 20,
+  display: 'flex',
+  flexDirection: 'column',
+};
+
+export const columnListItem = {
+  height: 100,
+  display: 'flex',
+  flexDirection: 'row-reverse',
+  justifyContent: 'flex-start',
+  alignItems: 'flex-start',
+  marginBottom: 5,
+};
+
+export const rowListItemThumbnailContainer = {
+  flex: 1,
+  borderRadius: 8,
+};
+
+export const columnListItemThumbnailContainer = {
+  width: 100,
+  height: 100,
+  borderRadius: 50,
+};
+
+export const rowListItemThumbnail = {
+  width: '100%',
+  height: '100%',
+};
+
+export const columnListItemThumbnail = {
+  width: '100%',
+  height: '100%',
+  borderRadius: 50,
+};
+
+export const rowListItemTitle = [
+  FONTS.body4,
+  {
+    marginTop: 10,
+    marginBottom: 10,
+    paddingBottom: 5,
+    paddingHorizontal: SIZES.padding3,
+  },
+];
+
+export const columnListItemTitle = [
+  FONTS.h4,
+  {
+    marginBottom: 10,
+    paddingBottom: 5,
+    paddingHorizontal: SIZES.padding3,
+  },
+];
+
+export const columnListItemBody = [
+  FONTS.body4,
+  {
+    marginBottom: 10,
+    paddingBottom: 5,
+    paddingHorizontal: SIZES.padding3,
+  },
+];
+
+export const boxContainer = {
+  shadowColor: '#000',
+  shadowOffset: {
+    width: 0,
+    height: 2,
+  },
+  shadowOpacity: 0.25,
+  shadowRadius: 3.84,
+  elevation: 5,
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
+  marginHorizontal: SIZES.padding3,
+  marginTop: SIZES.padding3,
+};
+
+export const boxHeaderContainer = {
+  display: 'flex',
+  flexDirection: 'row-reverse',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  paddingHorizontal: SIZES.padding3,
+};
+
+export const boxTitleContainer = {};
+
+export const boxTitle = [
+  FONTS.h4,
+  {
+    marginTop: 10,
+    marginBottom: 10,
+    paddingBottom: 5,
+  },
+];
+
+export const boxContent = {
+  flex: 1,
+  marginVertical: 5,
+  marginHorizontal: 5,
+};
+
+export const panelContainer = {
+  display: 'flex',
+  flexDirection: 'column',
+  marginHorizontal: SIZES.padding3,
+  marginVertical: SIZES.padding3,
+};
+
+export const bodyText = {
+  ...FONTS.body4,
+};
+
+export const progressBarContainer = {
+  flexDirection: 'row',
+  height: 1,
+  justifyContent: 'flex-start',
+  width: SIZES.width,
+};
+
+export const progress = {
+  width: '0%',
+};
+
+export const splashScreenContainer = {
+  height: SIZES.height,
+  width: SIZES.width,
+  padding: 0,
+  margin: 0,
+};
+
+export const pageContainer = {
+  width: SIZES.width,
+  paddingBottom: SIZES.padding3,
+  display: 'flex',
+  flex: 1,
+};
+
+export const divider = {
+  height: 1,
+  width: SIZES.width,
+  marginVertical: 10,
 };

@@ -3,6 +3,13 @@ const {serverUrl} = appConfig;
 
 export const SERVER_URL = `${serverUrl}/app`;
 
+export const DASHBOARD_API_URLS = {
+  FETCH_ITEMS: `${SERVER_URL}/dashboard`,
+  LOGIN: `${SERVER_URL}/users/login`,
+  GET_TOKEN: `${SERVER_URL}/users/get_token`,
+  FETCH_USER: `${SERVER_URL}/users/show`,
+};
+
 export const USERS_API_URLS = {
   SIGN_UP: `${SERVER_URL}/users/sign_up`,
   LOGIN: `${SERVER_URL}/users/login`,

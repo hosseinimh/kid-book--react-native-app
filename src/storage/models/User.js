@@ -6,19 +6,13 @@ const tblName = 'tbl_users';
 
 function createTableSqls() {
   let dropSql = `DROP TABLE IF EXISTS ${tblName}`;
-  let createSql = `CREATE TABLE IF NOT EXISTS ${tblName} (id INTEGER PRIMARY KEY AUTOINCREMENT,uuid VARCHAR(100),created_at VARCHAR(20),updated_at VARCHAR(20))`;
+  let createSql = `CREATE TABLE IF NOT EXISTS ${tblName} (id INTEGER PRIMARY KEY AUTOINCREMENT,username VARCHAR(100),created_at VARCHAR(20),updated_at VARCHAR(20))`;
 
   return {dropSql, createSql};
 }
 
-async function handleGet(create = true) {
+async function handleGet() {
   let items = await sqlite.select(`SELECT * FROM ${tblName} ORDER BY id DESC`);
-
-  if (items === 0 && create) {
-    await sqlite.handleCreateTable();
-
-    items = await sqlite.select(`SELECT * FROM ${tblName} ORDER BY id DESC`);
-  }
 
   return items?.length > 0 ? items[0] : null;
 }
@@ -35,23 +29,27 @@ class User {
 
     await this.insert();
 
-    return await handleGet(false);
+    return await handleGet();
   };
 
   insert = async () => {
     let dateTime = utils.getDateTime();
 
     return await sqlite.execute(
-      `INSERT INTO ${tblName} (uuid,created_at,updated_at) VALUES (null,'${dateTime}',null)`,
+      `INSERT INTO ${tblName} (username,created_at,updated_at) VALUES (null,'${dateTime}',null)`,
     );
   };
 
-  updateUUID = async uuid => {
+  updateUsername = async username => {
     let dateTime = utils.getDateTime();
 
     return await sqlite.execute(
-      `UPDATE ${tblName} SET uuid='${uuid}',updated_at='${dateTime}'`,
+      `UPDATE ${tblName} SET username='${username}',updated_at='${dateTime}'`,
     );
+  };
+
+  createTable = async () => {
+    return await sqlite.handleCreateTable();
   };
 
   dropTable = async () => {

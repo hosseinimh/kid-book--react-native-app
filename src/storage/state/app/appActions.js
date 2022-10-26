@@ -1,15 +1,33 @@
-export const SET_SETTINGS = 'SET_SETTINGS';
-export const SET_USER = 'SET_USER';
-export const SET_SERVER_TOKEN = 'SET_SERVER_TOKEN';
+import {ServerConnectionStatus} from '../../../constants';
+import {LoginService} from '../../../services';
 
-export const setSettings = settings => async dispatch => {
-  dispatch({type: SET_SETTINGS, payload: settings});
-};
+export const SET_SERVER_CONNECTION_STATUS = 'SET_SERVER_CONNECTION_STATUS';
 
-export const setUser = user => async dispatch => {
-  dispatch({type: SET_USER, payload: user});
-};
+export const setServerConnectionStatus =
+  serverConnectionStatus => async dispatch => {
+    dispatch({
+      type: SET_SERVER_CONNECTION_STATUS,
+      payload: serverConnectionStatus,
+    });
 
-export const setServerToken = serverToken => async dispatch => {
-  dispatch({type: SET_SERVER_TOKEN, payload: serverToken});
-};
+    if (
+      serverConnectionStatus === ServerConnectionStatus.CONNECTING ||
+      serverConnectionStatus === ServerConnectionStatus.TOKEN_EXPIRED
+    ) {
+      let result = await LoginService.login();
+
+      if (result) {
+        dispatch({
+          type: SET_SERVER_CONNECTION_STATUS,
+          payload: ServerConnectionStatus.CONNECTED,
+        });
+
+        return;
+      }
+
+      dispatch({
+        type: SET_SERVER_CONNECTION_STATUS,
+        payload: ServerConnectionStatus.DISCONNECTED,
+      });
+    }
+  };

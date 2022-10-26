@@ -1,4 +1,4 @@
-import {TABS, THEMES} from 'constants';
+import {TABS, THEMES} from '../../../constants';
 
 import * as layoutActions from './layoutActions';
 

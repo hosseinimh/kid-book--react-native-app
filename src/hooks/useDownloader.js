@@ -2,19 +2,31 @@ import {useEffect} from 'react';
 import {PermissionsAndroid} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 
-import {downloader as strings} from 'constants/strings';
+import {downloader as strings} from '../constants/strings';
 
-const useDownloader = (url, filename, setDownloadInfo, setPath) => {
-  // const dirs = RNFetchBlob.fs.dirs;
+const useDownloader = (
+  url,
+  filename,
+  dirPath = RNFetchBlob.fs.dirs.DocumentDir,
+  setDownloadInfo,
+  setPath,
+) => {
+  let dirs;
   let task;
 
+  if (dirPath === RNFetchBlob.fs.dirs.PictureDir) {
+    dirs = dirPath;
+  } else {
+    dirs = RNFetchBlob.fs.dirs.DocumentDir;
+  }
+
   useEffect(() => {
-    // task = RNFetchBlob.config({
-    //   path: dirs.DocumentDir + '/' + filename,
-    // }).fetch('GET', url, {});
+    task = RNFetchBlob.config({
+      path: dirs + '/' + filename,
+    });
 
     return () => {
-      // cancel();
+      cancel();
     };
   }, []);
 
@@ -33,48 +45,48 @@ const useDownloader = (url, filename, setDownloadInfo, setPath) => {
 
   const download = () => {
     try {
-      if (!checkPermission()) {
-        console.log('no permission');
+      // if (!(await checkPermission())) {
+      //   console.log('no permission');
 
-        return;
-      }
+      //   return;
+      // }
 
-      const dirs = RNFetchBlob.fs.dirs;
-      RNFetchBlob.config({
-        path: dirs.DocumentDir + '/' + filename,
-      })
+      task
         .fetch('GET', url, {})
         .progress((received, total) => {
-          setDownloadInfo({
-            downloading: true,
-            progress: Math.floor((received * 100) / total),
-            loaded: received,
-            total,
-            completed: false,
-          });
+          if (setDownloadInfo) {
+            setDownloadInfo({
+              downloading: true,
+              progress: Math.floor((received * 100) / total),
+              loaded: received,
+              total,
+              completed: false,
+            });
+          }
         })
         .then(res => {
-          setDownloadInfo(info => ({
-            ...info,
-            downloading: false,
-            progress: 100,
-            completed: true,
-          }));
+          if (setDownloadInfo) {
+            setDownloadInfo(info => ({
+              ...info,
+              downloading: false,
+              progress: 100,
+              completed: true,
+            }));
+          }
           setPath(res.path());
         })
         .catch(err => {
-          console.log(err);
+          console.warn('download', err);
         });
     } catch (error) {
-      console.log(error);
+      console.warn('download', error);
     }
   };
 
   const cancel = () => {
-    // try {
-    //   task?.cancel(err => {});
-    //   console.log('cancel');
-    // } catch (error) {}
+    try {
+      task?.cancel(err => {});
+    } catch (error) {}
   };
 
   return {download, cancelDownload: cancel};

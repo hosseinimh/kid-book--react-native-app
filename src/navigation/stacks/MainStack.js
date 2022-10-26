@@ -1,10 +1,16 @@
 import {createStackNavigator} from '@react-navigation/stack';
 
+import {Screens} from '../../constants';
 import {
+  AuthorScreen,
+  AuthorsListScreen,
   HomeScreen,
   SpeakerScreen,
+  SpeakersListScreen,
   SplashScreen,
   StoryScreen,
+  TranslatorScreen,
+  TranslatorsListScreen,
 } from '../../screens';
 
 const Stack = createStackNavigator();
@@ -16,23 +22,48 @@ const MainStack = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="Splash"
+        name={Screens.SPLASH}
         component={SplashScreen}
         options={defaultScreenOption}
       />
       <Stack.Screen
-        name="Home"
+        name={Screens.HOME}
         component={HomeScreen}
         options={defaultScreenOption}
       />
       <Stack.Screen
-        name="Story"
+        name={Screens.STORY}
         component={StoryScreen}
         options={defaultScreenOption}
       />
       <Stack.Screen
-        name="Speaker"
+        name={Screens.AUTHOR}
+        component={AuthorScreen}
+        options={defaultScreenOption}
+      />
+      <Stack.Screen
+        name={Screens.AUTHORS_LIST}
+        component={AuthorsListScreen}
+        options={defaultScreenOption}
+      />
+      <Stack.Screen
+        name={Screens.TRANSLATOR}
+        component={TranslatorScreen}
+        options={defaultScreenOption}
+      />
+      <Stack.Screen
+        name={Screens.TRANSLATORS_LIST}
+        component={TranslatorsListScreen}
+        options={defaultScreenOption}
+      />
+      <Stack.Screen
+        name={Screens.SPEAKER}
         component={SpeakerScreen}
+        options={defaultScreenOption}
+      />
+      <Stack.Screen
+        name={Screens.SPEAKERS_LIST}
+        component={SpeakersListScreen}
         options={defaultScreenOption}
       />
     </Stack.Navigator>

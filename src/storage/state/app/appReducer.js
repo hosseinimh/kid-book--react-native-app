@@ -1,25 +1,15 @@
+import {ServerConnectionStatus} from '../../../constants';
+
 import * as appActions from './appActions';
 
 const initialState = {
-  settings: null,
-  user: null,
-  serverToken: null,
+  serverConnectionStatus: ServerConnectionStatus.NOT_STARTED,
 };
 
 const appReducer = (state = initialState, {type, payload}) => {
   switch (type) {
-    case appActions.SET_SETTINGS:
-      return {...state, settings: payload};
-    case appActions.SET_USER:
-      return {
-        ...state,
-        user: payload,
-      };
-    case appActions.SET_SERVER_TOKEN:
-      return {
-        ...state,
-        serverToken: payload,
-      };
+    case appActions.SET_SERVER_CONNECTION_STATUS:
+      return {...state, serverConnectionStatus: payload};
     default:
       return state;
   }
