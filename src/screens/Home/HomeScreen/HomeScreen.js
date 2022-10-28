@@ -14,23 +14,26 @@ import images from '../../../theme/images';
 import {Box, Sidebar} from '../../../components';
 import {utils} from '../../../utils';
 import {HomeTabScreen, AboutTabScreen} from './tabScreens';
-import {TAB_SCREENS, TABS, ServerConnectionStatus} from '../../../constants';
+import {TAB_SCREENS, TABS} from '../../../constants';
 import {setTabAction} from '../../../storage/state/layout/layoutActions';
 import {BaseScreen} from '../../';
 import * as globalStyles from '../../../theme/style';
 import {Header} from '../../../components';
 import {useTheme} from '../../../hooks';
 import {homeTabScreen} from '../../../constants/strings';
-import {setServerConnectionStatus} from '../../../storage/state/app/appActions';
-import {LoginService, SettingsService} from '../../../services';
+import {DashboardService, LoginService} from '../../../services';
 import {Settings} from '../../../storage/models';
 
 const DURATION = 300;
 
 const HomeScreen = ({navigation}) => {
-  const [initialized, setInitialized] = useState(false);
+  const [initialized, setInitialized] = useState(null);
   const [showMenu, setShowMenu] = useState(false);
   const [tabScreen, setTabScreen] = useState(TAB_SCREENS.Home);
+  const [storyCategories, setStoryCategories] = useState([]);
+  const [authors, setAuthors] = useState([]);
+  const [translators, setTranslators] = useState([]);
+  const [speakers, setSpeakers] = useState([]);
 
   const {colors} = useTheme();
   const styles = StyleSheet.create({
@@ -51,7 +54,6 @@ const HomeScreen = ({navigation}) => {
   const dispatch = useDispatch();
 
   const layoutState = useSelector(state => state.layoutReducer);
-  const appState = useSelector(state => state.appReducer);
 
   const offsetValue = useRef(new Animated.Value(0)).current;
   const scaleValue = useRef(new Animated.Value(1)).current;
@@ -78,8 +80,30 @@ const HomeScreen = ({navigation}) => {
 
     await settings.updateToken(null);
     await LoginService.login();
+    const result = await getItems();
 
-    setInitialized(true);
+    setInitialized(result);
+  };
+
+  const getItems = async () => {
+    const result = await DashboardService.getItems();
+
+    if (
+      result &&
+      result.storyCategories?.length > 0 &&
+      result.authors?.length > 0 &&
+      result.translators?.length > 0 &&
+      result.speakers?.length > 0
+    ) {
+      setStoryCategories(result.storyCategories);
+      setAuthors(result.authors);
+      setTranslators(result.translators);
+      setSpeakers(result.speakers);
+
+      return true;
+    }
+
+    return false;
   };
 
   BackHandler.addEventListener('hardwareBackPress', function () {
@@ -197,7 +221,15 @@ const HomeScreen = ({navigation}) => {
   const renderTabScreen = () => {
     switch (tabScreen) {
       case TAB_SCREENS.Home:
-        return <HomeTabScreen navigation={navigation} />;
+        return (
+          <HomeTabScreen
+            navigation={navigation}
+            storyCategories={storyCategories}
+            authors={authors}
+            translators={translators}
+            speakers={speakers}
+          />
+        );
       case TAB_SCREENS.About:
         return <AboutTabScreen />;
       default:
@@ -232,10 +264,8 @@ const HomeScreen = ({navigation}) => {
           },
         ]}>
         {renderHeader()}
-        {/* <Text>{appState?.serverConnectionStatus}</Text> */}
         {initialized && renderTabScreen()}
-        {/* {appState?.serverConnectionStatus ===
-          ServerConnectionStatus.DISCONNECTED && renderNotInitialized()} */}
+        {initialized === false && renderNotInitialized()}
       </Animated.View>
     </BaseScreen>
   );

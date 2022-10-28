@@ -3,6 +3,7 @@ import {
   SettingsService,
   SpeakerService,
   StoryCategoryService,
+  StoryItemService,
   StoryService,
   TranslatorService,
 } from '../services';
@@ -29,35 +30,55 @@ export const getItems = async () => {
 };
 
 const saveStoryCategories = async items => {
-  for (let i = 0; i < items?.length; i++) {
-    await StoryCategoryService.insertItem(items[i]);
-  }
+  try {
+    for (let i = 0; i < items?.length; i++) {
+      await StoryCategoryService.insertItem(items[i]);
+
+      for (let j = 0; j < items[i]?.stories?.length; j++) {
+        await StoryService.insertItem(items[i].stories[j]);
+
+        for (let k = 0; k < items[i]?.stories[j]?.storyItems?.length; k++) {
+          await StoryItemService.insertItem(items[i].stories[j].storyItems[k]);
+        }
+      }
+    }
+  } catch {}
 };
 
 const saveAuthors = async items => {
-  for (let i = 0; i < items?.length; i++) {
-    await AuthorService.insertItem(items[i]);
-  }
+  try {
+    for (let i = 0; i < items?.length; i++) {
+      await AuthorService.insertItem(items[i]);
+    }
+  } catch {}
 };
 
 const saveTranslators = async items => {
-  for (let i = 0; i < items?.length; i++) {
-    await TranslatorService.insertItem(items[i]);
-  }
+  try {
+    for (let i = 0; i < items?.length; i++) {
+      await TranslatorService.insertItem(items[i]);
+    }
+  } catch {}
 };
 
 const saveSpeakers = async items => {
-  for (let i = 0; i < items?.length; i++) {
-    await SpeakerService.insertItem(items[i]);
-  }
+  try {
+    for (let i = 0; i < items?.length; i++) {
+      await SpeakerService.insertItem(items[i]);
+    }
+  } catch {}
 };
 
 const getStoryCategories = async () => {
-  const items = await StoryCategoryService.getItems();
+  try {
+    const items = await StoryCategoryService.getItems();
 
-  for (let i = 0; i < items?.length; i++) {
-    items[i].stories = await StoryService.getItems(items[i].id);
-  }
+    for (let i = 0; i < items?.length; i++) {
+      items[i].stories = await StoryService.getItems(items[i].id);
+    }
 
-  return items;
+    return items;
+  } catch {}
+
+  return null;
 };

@@ -1,4 +1,4 @@
-import {PermissionsAndroid} from 'react-native';
+import {Image, PermissionsAndroid} from 'react-native';
 import RNFS from 'react-native-fs';
 
 import {TABS} from '../constants';
@@ -100,6 +100,18 @@ const checkPermission = async () => {
 };
 
 const downloadAsync = async (url, filename) => {
+  let i = 0;
+  let result = null;
+
+  do {
+    i++;
+    result = await handleDownloadAsync(url, filename);
+  } while (i < 10 && !result);
+
+  return result;
+};
+
+const handleDownloadAsync = async (url, filename) => {
   try {
     filename = `${RNFS.DocumentDirectoryPath}/${filename}`;
     const result = await RNFS.downloadFile({
@@ -107,14 +119,18 @@ const downloadAsync = async (url, filename) => {
       toFile: filename,
     }).promise;
 
-    if (result.bytesWritten > 0 && result.statusCode === 200) {
+    if (result && result.bytesWritten > 0 && result.statusCode === 200) {
       return filename;
     }
-  } catch (error) {
-    console.warn('downloadAsync', error, url);
-  }
+  } catch {}
 
   return null;
+};
+
+const downloadImage = async url => {
+  const filename = new Date().valueOf() + '.jpg';
+
+  return await downloadAsync(url, filename);
 };
 
 const deleteFile = async filename => {
@@ -130,6 +146,20 @@ const deleteFile = async filename => {
   return false;
 };
 
+const getImageSize = uri =>
+  new Promise(resolve => {
+    Image.getSize(
+      uri,
+      (width, height) => resolve({width, height}),
+      () => {
+        resolve({width: '100%', height: 300});
+      },
+    );
+  });
+
+const prepareStr = (text, defaultValue = '""') =>
+  text ? `"${text}"` : defaultValue;
+
 const utils = {
   tabScreenTitle,
   tabText,
@@ -138,6 +168,9 @@ const utils = {
   en2faDigits,
   downloadAsync,
   deleteFile,
+  downloadImage,
+  getImageSize,
+  prepareStr,
 };
 
 export default utils;

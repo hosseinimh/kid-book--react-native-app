@@ -139,6 +139,7 @@ export const columnListItemThumbnailContainer = {
 export const rowListItemThumbnail = {
   width: '100%',
   height: '100%',
+  borderRadius: 8,
 };
 
 export const columnListItemThumbnail = {

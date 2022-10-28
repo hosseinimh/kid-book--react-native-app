@@ -1,13 +1,14 @@
 const appConfig = require('../../app-config.json');
-const {serverUrl} = appConfig;
+let {serverUrl} = appConfig;
+serverUrl += '/app/download';
 
 const ResourceUrls = {
-  STORY_THUMBNAIL: `${serverUrl}/storage/stories/thumbnails`,
-  STORY_IMAGE: `${serverUrl}/storage/stories/images`,
-  STORY_ITEM_IMAGE: `${serverUrl}/storage/story_items/images`,
-  AUTHOR_IMAGE: `${serverUrl}/storage/authors/avatars`,
-  TRANSLATOR_IMAGE: `${serverUrl}/storage/translators/avatars`,
-  SPEAKER_IMAGE: `${serverUrl}/storage/speakers/avatars`,
+  STORY_THUMBNAIL: `${serverUrl}?type=STORY_THUMBNAIL&filename=`,
+  STORY_IMAGE: `${serverUrl}?type=STORY_IMAGE&filename=`,
+  STORY_ITEM_IMAGE: `${serverUrl}?type=STORY_ITEM_IMAGE&filename=`,
+  AUTHOR_IMAGE: `${serverUrl}?type=AUTHOR_IMAGE&filename=`,
+  TRANSLATOR_IMAGE: `${serverUrl}?type=TRANSLATOR_IMAGE&filename=`,
+  SPEAKER_IMAGE: `${serverUrl}?type=SPEAKER_IMAGE&filename=`,
 };
 
 export default ResourceUrls;

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 import {Settings} from '../storage/models';
 
-const TIMEOUT = 10000;
+const TIMEOUT = 5000;
 
 const createFileConfig = () => {
   const config = {
@@ -36,9 +36,9 @@ export const post = async (url, data = null) => {
     });
 
     return response;
-  } catch (error) {
-    return null;
-  }
+  } catch {}
+
+  return null;
 };
 
 export const postWithoutToken = async (url, data = null) => {
@@ -60,9 +60,9 @@ export const postWithoutToken = async (url, data = null) => {
     });
 
     return response;
-  } catch (error) {
-    return null;
-  }
+  } catch {}
+
+  return null;
 };
 
 export const postFile = async (url, data = null) => {

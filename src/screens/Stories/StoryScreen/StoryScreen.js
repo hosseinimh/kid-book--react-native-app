@@ -37,32 +37,42 @@ const StoryScreen = ({route, navigation}) => {
     volumeIcon: [globalStyles.backHeaderIcon, {tintColor: colors.text}],
     imageBackground: {
       width: '100%',
-      height: 200,
-      opacity: 0.1,
-      zIndex: 1,
+      height: 150,
+      opacity: 0.4,
     },
     image: {
-      width: 200,
-      height: 200,
-      borderRadius: 100,
+      width: 100,
+      height: 100,
+      borderRadius: 5,
       position: 'absolute',
       zIndex: 2,
       opacity: 1,
+      top: -100,
+      right: 20,
+      borderWidth: 1,
+      borderColor: colors.border,
     },
-    titleContainer: {marginTop: SIZES.padding2},
+    titleContainer: {marginVertical: SIZES.padding1},
     title: {...FONTS.h2, color: colors.text},
     txtContentContainer: {
-      flex: 1,
       alignSelf: 'flex-end',
-      marginVertical: 5,
-    },
-    txtContent: {...FONTS.body4, color: colors.text, textAlign: 'right'},
-    imageContentContainer: {
       marginVertical: 5,
       width: '100%',
     },
+    txtFaContent: {...FONTS.body4, color: colors.text, textAlign: 'right'},
+    txtEnContent: {...FONTS.body4, color: colors.text, textAlign: 'left'},
+    imageContentContainer: {
+      marginVertical: SIZES.padding1,
+      width: '100%',
+      borderRadius: 5,
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'center',
+    },
     imageContent: {
       height: 300,
+      width: '100%',
+      borderRadius: 5,
     },
   });
 
@@ -89,6 +99,24 @@ const StoryScreen = ({route, navigation}) => {
 
     if (data) {
       data.storyItems = await StoryItemService.getItems(id);
+
+      if (data.storyItems) {
+        for (let i = 0; i < data.storyItems.length; i++) {
+          if (
+            data.storyItems[i].type === StoryItemType.IMAGE &&
+            data.storyItems[i].content
+          ) {
+            const {width, height} = await utils.getImageSize(
+              `file://${data.storyItems[i].content}`,
+            );
+            const newWidth = SIZES.width - SIZES.padding1 - SIZES.padding1;
+            const newHeight = (height / width) * newWidth;
+
+            data.storyItems[i].width = newWidth;
+            data.storyItems[i].height = newHeight;
+          }
+        }
+      }
     }
 
     setItem(data);
@@ -119,49 +147,64 @@ const StoryScreen = ({route, navigation}) => {
       headerTitle={item?.title ?? ''}
       leftContainer={() => renderLeftContainer()}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.container}>
+        <View>
           {item?.image && (
             <ImageBackground
               style={styles.imageBackground}
               source={{
                 uri: `file://${item?.image}`,
-              }}></ImageBackground>
-          )}
-          {item?.thumbnail && (
-            <Image
-              style={styles.image}
-              source={{
-                uri: `file://${item?.thumbnail}`,
               }}
-              resizeMode="cover"
-            />
+              resizeMode="stretch"></ImageBackground>
           )}
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>
-              {utils.en2faDigits(item?.title) ?? ''}
-            </Text>
+          <View style={styles.container}>
+            {item?.thumbnail && (
+              <Image
+                style={styles.image}
+                source={{
+                  uri: `file://${item?.thumbnail}`,
+                }}
+                resizeMode="center"
+              />
+            )}
+            <View style={styles.titleContainer}>
+              <Text style={styles.title}>
+                {utils.en2faDigits(item?.title) ?? ''}
+              </Text>
+            </View>
+            {item?.storyItems?.map((item, index) => (
+              <React.Fragment key={index}>
+                {item.type === StoryItemType.TEXT_EN && (
+                  <View style={styles.txtContentContainer}>
+                    <Text style={styles.txtEnContent}>
+                      {item?.content ?? ''}
+                    </Text>
+                  </View>
+                )}
+                {item.type === StoryItemType.TEXT_FA && (
+                  <View style={styles.txtContentContainer}>
+                    <Text style={styles.txtFaContent}>
+                      {item?.content ? utils.en2faDigits(item.content) : ''}
+                    </Text>
+                  </View>
+                )}
+                {item.type === StoryItemType.IMAGE && item?.content && (
+                  <View style={styles.imageContentContainer}>
+                    <Image
+                      style={{
+                        ...styles.imageContent,
+                        width: item.width,
+                        height: item.height,
+                      }}
+                      source={{
+                        uri: `file://${item?.content}`,
+                      }}
+                      resizeMode="stretch"
+                    />
+                  </View>
+                )}
+              </React.Fragment>
+            ))}
           </View>
-          {item?.storyItems?.map((item, index) => (
-            <React.Fragment key={index}>
-              {(item.type === StoryItemType.TEXT_EN ||
-                item.type === StoryItemType.TEXT_FA) && (
-                <View style={styles.txtContentContainer}>
-                  <Text style={styles.txtContent}>sss</Text>
-                </View>
-              )}
-              {item.type === StoryItemType.IMAGE && item?.content && (
-                <View style={styles.imageContentContainer}>
-                  <Image
-                    style={styles.imageContent}
-                    source={{
-                      uri: `file://${item?.content}`,
-                    }}
-                    resizeMode="contain"
-                  />
-                </View>
-              )}
-            </React.Fragment>
-          ))}
         </View>
       </ScrollView>
     </PanelScreen>

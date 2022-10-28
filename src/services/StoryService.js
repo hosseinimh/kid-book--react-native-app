@@ -28,150 +28,164 @@ export const getItems = async (storyCategoryId, page = 1) => {
 };
 
 export const insertItem = async item => {
-  const model = new Model();
-  const isConnected = await SettingsService.isConnected();
+  try {
+    const model = new Model();
+    const isConnected = await SettingsService.isConnected();
 
-  if (!isConnected || (await model.getItemByServerId(item.id))) {
-    return false;
-  }
+    if (!isConnected || (await model.getItemByServerId(item.id))) {
+      return false;
+    }
 
-  if (item.thumbnail) {
-    item.thumbnail = await downloadImage(
-      `${resourceThumbnailUrl}/${item.thumbnail}`,
+    if (item.thumbnail) {
+      item.thumbnail = await utils.downloadImage(
+        `${resourceThumbnailUrl}/${item.thumbnail}`,
+      );
+    }
+
+    if (item.image) {
+      item.image = await utils.downloadImage(
+        `${resourceImageUrl}${item.image}`,
+      );
+    }
+
+    return await model.insert(
+      item.id,
+      item.story_category_id,
+      item.title,
+      item.thumbnail,
+      item.image,
     );
-  }
+  } catch {}
 
-  if (item.image) {
-    item.image = await downloadImage(`${resourceImageUrl}/${item.image}`);
-  }
-
-  return await model.insert(
-    item.id,
-    item.story_category_id,
-    item.title,
-    item.thumbnail,
-    item.image,
-  );
-};
-
-const downloadImage = async url => {
-  const filename = new Date().valueOf() + '.jpg';
-
-  return await utils.downloadAsync(url, filename);
+  return false;
 };
 
 const handleGet = async id => {
-  const model = new Model();
-  const record = await model.getItemByServerId(id);
+  try {
+    const model = new Model();
+    const record = await model.getItemByServerId(id);
 
-  if (record) {
-    return {
-      id: record.server_story_id,
-      story_category_id: record.story_category_id,
-      title: record.title,
-      thumbnail: record.thumbnail,
-      image: record.image,
-    };
-  }
+    if (record) {
+      return {
+        id: record.server_story_id,
+        story_category_id: record.story_category_id,
+        title: record.title,
+        thumbnail: record.thumbnail,
+        image: record.image,
+      };
+    }
+  } catch {}
 
   return null;
 };
 
 const handleGetServer = async id => {
-  const model = new Model();
-  const entity = new Entity();
-  let result = await entity.get(id);
+  try {
+    const model = new Model();
+    const entity = new Entity();
+    let result = await entity.get(id);
 
-  if (result?.item) {
-    let thumbnail = result.item.thumbnail;
-    let image = result.item.image;
+    if (result?.item) {
+      let thumbnail = result.item.thumbnail;
+      let image = result.item.image;
 
-    if (thumbnail) {
-      thumbnail = await downloadImage(`${resourceThumbnailUrl}/${thumbnail}`);
+      if (thumbnail) {
+        thumbnail = await utils.downloadImage(
+          `${resourceThumbnailUrl}${thumbnail}`,
+        );
+      }
+
+      if (image) {
+        image = await utils.downloadImage(`${resourceImageUrl}${image}`);
+      }
+
+      await model.insert(
+        id,
+        result.item.story_category_id,
+        result.item.title,
+        thumbnail,
+        image,
+      );
+
+      return {
+        id: result.item.id,
+        story_category_id: result.item.story_category_id,
+        title: result.item.title,
+        thumbnail,
+        image,
+      };
     }
-
-    if (image) {
-      image = await downloadImage(`${resourceImageUrl}/${image}`);
-    }
-
-    await model.insert(
-      id,
-      result.item.story_category_id,
-      result.item.title,
-      thumbnail,
-      image,
-    );
-
-    return {
-      id: result.item.id,
-      story_category_id: result.item.story_category_id,
-      title: result.item.title,
-      thumbnail,
-      image,
-    };
-  }
+  } catch {}
 
   return null;
 };
 
 const handleGetItems = async (storyCategroyId, page) => {
   let items = [];
-  const model = new Model();
-  const records = await model.getItems(storyCategroyId, page);
 
-  if (records) {
-    records.forEach(record => {
-      items.push({
-        id: record.server_story_id,
-        story_category_id: record.story_category_id,
-        title: record.title,
-        thumbnail: record.thumbnail,
-        image: record.image,
+  try {
+    const model = new Model();
+    const records = await model.getItems(storyCategroyId, page);
+
+    if (records) {
+      records.forEach(record => {
+        items.push({
+          id: record.server_story_id,
+          story_category_id: record.story_category_id,
+          title: record.title,
+          thumbnail: record.thumbnail,
+          image: record.image,
+        });
       });
-    });
-  }
+    }
+  } catch {}
 
   return items.length > 0 ? items : null;
 };
 
 const handleGetServerItems = async (storyCategroyId, page) => {
   let items = [];
-  const model = new Model();
-  const entity = new Entity();
-  const result = await entity.paginate(storyCategroyId, page);
 
-  if (result?.items) {
-    result?.items.forEach(async item => {
-      let thumbnail = item.thumbnail;
-      let image = item.image;
+  try {
+    const model = new Model();
+    const entity = new Entity();
+    const result = await entity.paginate(storyCategroyId, page);
 
-      if (thumbnail) {
-        thumbnail = await downloadImage(`${resourceThumbnailUrl}/${thumbnail}`);
-      }
+    if (result?.items) {
+      result?.items.forEach(async item => {
+        let thumbnail = item.thumbnail;
+        let image = item.image;
 
-      if (image) {
-        image = await downloadImage(`${resourceImageUrl}/${image}`);
-      }
+        if (thumbnail) {
+          thumbnail = await utils.downloadImage(
+            `${resourceThumbnailUrl}${thumbnail}`,
+          );
+        }
 
-      if (!(await model.getItemByServerId(item.id))) {
-        await model.insert(
-          item.id,
-          item.story_category_id,
-          item.title,
-          thumbnail,
-          image,
-        );
-      }
+        if (image) {
+          image = await utils.downloadImage(`${resourceImageUrl}${image}`);
+        }
 
-      items.push({
-        id: item.id,
-        story_category_id: item.story_category_id,
-        title: item.title,
-        thumbnail: thumbnail,
-        image: image,
+        if (!(await model.getItemByServerId(item.id))) {
+          await model.insert(
+            item.id,
+            item.story_category_id,
+            item.title,
+            thumbnail,
+            image,
+          );
+        }
+
+        items.push({
+          id: item.id,
+          story_category_id: item.story_category_id,
+          title: item.title,
+          thumbnail: thumbnail,
+          image: image,
+        });
       });
-    });
-  }
+    }
+  } catch {}
 
   return items.length > 0 ? items : null;
 };

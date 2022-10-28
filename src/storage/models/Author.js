@@ -24,7 +24,7 @@ class Author {
 
   getItems = async (pageNumber = 1) => {
     return await sqlite.select(
-      `SELECT * FROM ${tblName} ORDER BY family,name,created_at,id DESC LIMIT ${
+      `SELECT * FROM ${tblName} ORDER BY family,name,id DESC LIMIT ${
         (pageNumber - 1) * PAGE_ITEMS
       },${PAGE_ITEMS}`,
     );
@@ -33,8 +33,13 @@ class Author {
   insert = async (serverAuthorId, name, family, description, avatar) => {
     let dateTime = utils.getDateTime();
 
+    name = utils.prepareStr(name);
+    family = utils.prepareStr(family);
+    description = utils.prepareStr(description);
+    avatar = utils.prepareStr(avatar, null);
+
     return await sqlite.execute(
-      `INSERT INTO ${tblName} (server_author_id,name,family,description,avatar,created_at,updated_at) VALUES (${serverAuthorId},'${name}','${family}','${description}','${avatar}','${dateTime}',null)`,
+      `INSERT INTO ${tblName} (server_author_id,name,family,description,avatar,created_at,updated_at) VALUES (${serverAuthorId},${name},${family},${description},${avatar},'${dateTime}',null)`,
     );
   };
 

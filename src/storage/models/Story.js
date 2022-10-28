@@ -24,7 +24,7 @@ class Story {
 
   getItems = async (storyCategoryId, pageNumber = 1) => {
     return await sqlite.select(
-      `SELECT * FROM ${tblName} WHERE story_category_id=${storyCategoryId} ORDER BY created_at,id DESC LIMIT ${
+      `SELECT * FROM ${tblName} WHERE story_category_id=${storyCategoryId} ORDER BY id DESC LIMIT ${
         (pageNumber - 1) * PAGE_ITEMS
       },${PAGE_ITEMS}`,
     );
@@ -33,8 +33,12 @@ class Story {
   insert = async (serverStoryId, storyCategoryId, title, thumbnail, image) => {
     let dateTime = utils.getDateTime();
 
+    title = utils.prepareStr(title);
+    thumbnail = utils.prepareStr(thumbnail, null);
+    image = utils.prepareStr(image, null);
+
     return await sqlite.execute(
-      `INSERT INTO ${tblName} (server_story_id,story_category_id,title,thumbnail,image,created_at,updated_at) VALUES (${serverStoryId},${storyCategoryId},'${title}','${thumbnail}','${image}','${dateTime}',null)`,
+      `INSERT INTO ${tblName} (server_story_id,story_category_id,title,thumbnail,image,created_at,updated_at) VALUES (${serverStoryId},${storyCategoryId},${title},${thumbnail},${image},'${dateTime}',null)`,
     );
   };
 

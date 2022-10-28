@@ -29,23 +29,24 @@ const AuthorScreen = ({route, navigation}) => {
       alignItems: 'center',
       flex: 1,
       paddingHorizontal: SIZES.padding3,
-      paddingVertical: SIZES.padding3,
+      paddingBottom: SIZES.padding3,
     },
-    imageBackground: {
+    titleContainer: {
+      display: 'flex',
+      flexDirection: 'row-reverse',
       width: '100%',
-      height: 200,
-      opacity: 0.1,
-      zIndex: 1,
+      marginBottom: SIZES.padding2,
     },
     image: {
-      width: 200,
-      height: 200,
-      borderRadius: 100,
-      position: 'absolute',
-      zIndex: 2,
-      opacity: 1,
+      width: 100,
+      height: 100,
+      borderRadius: 5,
+      borderWidth: 1,
+      borderColor: colors.border,
     },
-    nameContainer: {marginTop: SIZES.padding2},
+    nameContainer: {
+      marginHorizontal: SIZES.padding3,
+    },
     name: {...FONTS.h2, color: colors.text},
     descriptionContainer: {flex: 1, alignSelf: 'flex-end'},
     textDescription: {...FONTS.body4, color: colors.text, textAlign: 'right'},
@@ -69,13 +70,8 @@ const AuthorScreen = ({route, navigation}) => {
     <PanelScreen navigation={navigation} headerTitle={strings._headerTitle}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.container}>
-          {item?.avatar && (
-            <>
-              <ImageBackground
-                style={styles.imageBackground}
-                source={{
-                  uri: `file://${item?.avatar}`,
-                }}></ImageBackground>
+          <View style={styles.titleContainer}>
+            {item?.avatar && (
               <Image
                 style={styles.image}
                 source={{
@@ -83,12 +79,12 @@ const AuthorScreen = ({route, navigation}) => {
                 }}
                 resizeMode="cover"
               />
-            </>
-          )}
-          <View style={styles.nameContainer}>
-            <Text style={styles.name}>
-              {item && `${item?.name} ${item?.family}`}
-            </Text>
+            )}
+            <View style={styles.nameContainer}>
+              <Text style={styles.name}>
+                {item && `${item?.name} ${item?.family}`}
+              </Text>
+            </View>
           </View>
           <View style={styles.descriptionContainer}>
             <Text style={styles.textDescription}>{item?.description}</Text>

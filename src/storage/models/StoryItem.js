@@ -24,15 +24,18 @@ class StoryItem {
 
   getItems = async (storyId, pageNumber = 1) => {
     return await sqlite.select(
-      `SELECT * FROM ${tblName} WHERE story_id=${storyId} ORDER BY created_at,id DESC`,
+      `SELECT * FROM ${tblName} WHERE story_id=${storyId} ORDER BY id DESC`,
     );
   };
 
   insert = async (serverStoryItemId, storyId, type, content) => {
     let dateTime = utils.getDateTime();
 
+    type = utils.prepareStr(type);
+    content = utils.prepareStr(content, null);
+
     return await sqlite.execute(
-      `INSERT INTO ${tblName} (server_story_item_id,story_id,type,content,created_at,updated_at) VALUES (${serverStoryItemId},${storyId},'${type}','${content}','${dateTime}',null)`,
+      `INSERT INTO ${tblName} (server_story_item_id,story_id,type,content,created_at,updated_at) VALUES (${serverStoryItemId},${storyId},${type},${content},'${dateTime}',null)`,
     );
   };
 

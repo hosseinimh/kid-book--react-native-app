@@ -44,11 +44,13 @@ class Settings {
 
   updateToken = async token => {
     let dateTime = utils.getDateTime();
-    let sql = token
-      ? `UPDATE ${tblName} SET token='${token}',server_connected_at='${dateTime}',updated_at='${dateTime}'`
-      : `UPDATE ${tblName} SET token='${token}',server_connected_at=null,updated_at='${dateTime}'`;
+    let serverConnectedAt = token ? `"${dateTime}"` : null;
 
-    return await sqlite.execute(sql);
+    token = utils.prepareStr(token, null);
+
+    return await sqlite.execute(
+      `UPDATE ${tblName} SET token=${token},server_connected_at=${serverConnectedAt},updated_at='${dateTime}'`,
+    );
   };
 
   createTable = async () => {

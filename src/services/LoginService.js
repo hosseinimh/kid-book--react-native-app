@@ -11,7 +11,30 @@ import {
 import {User as UserEntity} from '../http/entities';
 
 export const login = async () => {
-  const userEntity = new UserEntity();
+  await createTables();
+
+  const user = new User();
+  const settings = new Settings();
+
+  let userItem = await user.get();
+  let settingsItem = await settings.get();
+
+  if (settingsItem) {
+    let result = await handleLogin(userItem?.username);
+
+    if (result) {
+      return true;
+    } else if (result === false) {
+      return await signUp(user);
+    }
+  }
+
+  await updateToken(null);
+
+  return false;
+};
+
+const createTables = async () => {
   const user = new User();
   const settings = new Settings();
   const storyCategory = new StoryCategory();
@@ -29,46 +52,51 @@ export const login = async () => {
   await author.createTable();
   await speaker.createTable();
   await translator.createTable();
+};
 
-  let userItem = await user.get();
-  let settingsItem = await settings.get();
+const handleLogin = async username => {
+  try {
+    const userEntity = new UserEntity();
 
-  if (userItem && settingsItem) {
-    if (userItem.username) {
-      let result = await userEntity.getToken(userItem.username);
+    if (username) {
+      let result = await userEntity.getToken(username);
+
+      if (!result) {
+        return null;
+      }
 
       if (result?.token) {
-        return await updateToken(settings, result.token);
+        return await updateToken(result.token);
       }
     }
-
-    let result = await signUp(user);
-
-    if (result) {
-      return await updateToken(settings, result.token);
-    }
-  }
-
-  await updateToken(settings, null);
+  } catch {}
 
   return false;
 };
 
 const signUp = async user => {
-  const entity = new UserEntity();
-  let result = await entity.signUp();
+  try {
+    const entity = new UserEntity();
+    let result = await entity.signUp();
 
-  if (
-    result?.token &&
-    result?.user?.username &&
-    (await user.updateUsername(result.user.username)) !== null
-  ) {
-    return result;
-  }
+    if (
+      result?.token &&
+      result?.user?.username &&
+      (await user.updateUsername(result.user.username)) !== null
+    ) {
+      return await updateToken(result.token);
+    }
+  } catch {}
 
   return null;
 };
 
-const updateToken = async (settings, token) => {
-  return (await settings.updateToken(token)) === true ? true : false;
+const updateToken = async token => {
+  try {
+    const settings = new Settings();
+
+    return (await settings.updateToken(token)) === true ? true : false;
+  } catch {}
+
+  return false;
 };
