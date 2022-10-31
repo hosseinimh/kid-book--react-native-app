@@ -5,6 +5,7 @@ serverUrl += '/app/download';
 const ResourceUrls = {
   STORY_THUMBNAIL: `${serverUrl}?type=STORY_THUMBNAIL&filename=`,
   STORY_IMAGE: `${serverUrl}?type=STORY_IMAGE&filename=`,
+  STORY_AUDIO: `${serverUrl}?type=STORY_AUDIO&filename=`,
   STORY_ITEM_IMAGE: `${serverUrl}?type=STORY_ITEM_IMAGE&filename=`,
   AUTHOR_IMAGE: `${serverUrl}?type=AUTHOR_IMAGE&filename=`,
   TRANSLATOR_IMAGE: `${serverUrl}?type=TRANSLATOR_IMAGE&filename=`,

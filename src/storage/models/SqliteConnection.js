@@ -81,7 +81,7 @@ class SqliteConnection {
                 items.push(results.rows.item(i));
               }
 
-              resolve(items.length > 0 ? items : null);
+              resolve(items.length > 0 ? items : []);
             },
             error => {
               console.warn('select', error);

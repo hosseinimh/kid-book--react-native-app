@@ -8,12 +8,22 @@ import {utils} from '../../utils';
 
 const Header = ({
   navigation,
+  navigateScreen,
+  navigateParams,
   title,
   rightContainer,
   leftContainer,
   containerStyle = {},
 }) => {
   const {colors} = useTheme();
+
+  const goBack = () => {
+    if (navigateScreen) {
+      navigation.navigate(navigateScreen, {...navigateParams});
+    } else {
+      navigation.goBack();
+    }
+  };
 
   return (
     <View
@@ -28,10 +38,7 @@ const Header = ({
       {rightContainer && rightContainer()}
       {!rightContainer && (
         <View>
-          <TouchableOpacity
-            onPress={() => {
-              navigation.goBack();
-            }}>
+          <TouchableOpacity onPress={goBack}>
             <Image
               source={images.arrowRight}
               style={styles.backHeaderIcon}></Image>

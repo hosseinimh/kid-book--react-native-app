@@ -4,6 +4,7 @@ import * as layoutActions from './layoutActions';
 
 const initialState = {
   tab: TABS.Home,
+  params: {},
   loading: false,
   theme: THEMES.Light,
 };
@@ -12,6 +13,8 @@ const layoutReducer = (state = initialState, {type, payload}) => {
   switch (type) {
     case layoutActions.SET_TAB_ACTION:
       return {...state, tab: payload};
+    case layoutActions.SET_PARAMS_ACTION:
+      return {...state, params: {...payload}};
     case layoutActions.SET_LOADING_ACTION:
       return {
         ...state,

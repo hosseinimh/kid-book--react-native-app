@@ -4,6 +4,7 @@ const TABS = {
   Notifications: 'Notifications',
   Settings: 'Settings',
   Theme: 'Theme',
+  Settings: 'Settings',
   About: 'About',
 };
 

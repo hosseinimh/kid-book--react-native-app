@@ -1,4 +1,5 @@
 import {Dimensions} from 'react-native';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 
 const {width, height} = Dimensions.get('window');
 
@@ -258,3 +259,20 @@ export const divider = {
   width: SIZES.width,
   marginVertical: 10,
 };
+
+export const fullWidthButtonConainer = {
+  width: '100%',
+  marginVertical: SIZES.padding2,
+};
+
+export const fullWidthButtonWrapper = {
+  borderRadius: 5,
+  paddingVertical: SIZES.padding3,
+  paddingHorizontal: SIZES.padding3,
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'center',
+  alignItems: 'center',
+};
+
+export const fullWidthButtonText = [FONTS.h4];

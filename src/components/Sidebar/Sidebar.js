@@ -83,6 +83,7 @@ const Sidebar = () => {
           TABS.Theme,
           layoutState?.theme === THEMES.Light ? images.sun : images.moon,
         )}
+        {renderTabButton(TABS.Settings, images.settings)}
         {renderTabButton(TABS.About, images.about)}
       </View>
       <View>

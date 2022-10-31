@@ -9,6 +9,7 @@ const Screens = {
   TRANSLATORS_LIST: `TRANSLATORS_LIST`,
   SPEAKER: `SPEAKER`,
   SPEAKERS_LIST: `SPEAKERS_LIST`,
+  SETTINGS: `SETTINGS`,
 };
 
 export default Screens;

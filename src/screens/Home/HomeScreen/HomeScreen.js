@@ -7,22 +7,27 @@ import {
   View,
   Text,
   StyleSheet,
+  RefreshControl,
+  ScrollView,
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 
 import images from '../../../theme/images';
 import {Box, Sidebar} from '../../../components';
 import {utils} from '../../../utils';
-import {HomeTabScreen, AboutTabScreen} from './tabScreens';
-import {TAB_SCREENS, TABS} from '../../../constants';
-import {setTabAction} from '../../../storage/state/layout/layoutActions';
+import {HomeTabScreen, SettingsTabScreen, AboutTabScreen} from './tabScreens';
+import {TAB_SCREENS, TABS, Screens} from '../../../constants';
+import {
+  setParamsAction,
+  setTabAction,
+} from '../../../storage/state/layout/layoutActions';
 import {BaseScreen} from '../../';
 import * as globalStyles from '../../../theme/style';
 import {Header} from '../../../components';
 import {useTheme} from '../../../hooks';
 import {homeTabScreen} from '../../../constants/strings';
-import {DashboardService, LoginService} from '../../../services';
-import {Settings} from '../../../storage/models';
+import {LoginService} from '../../../services';
+import {getHomeItems} from '../../../storage/state/home/homeActions';
 
 const DURATION = 300;
 
@@ -34,7 +39,6 @@ const HomeScreen = ({navigation}) => {
   const [authors, setAuthors] = useState([]);
   const [translators, setTranslators] = useState([]);
   const [speakers, setSpeakers] = useState([]);
-
   const {colors} = useTheme();
   const styles = StyleSheet.create({
     notInitializedBoxContainer: {
@@ -54,56 +58,71 @@ const HomeScreen = ({navigation}) => {
   const dispatch = useDispatch();
 
   const layoutState = useSelector(state => state.layoutReducer);
+  const homeState = useSelector(state => state.homeReducer);
 
   const offsetValue = useRef(new Animated.Value(0)).current;
   const scaleValue = useRef(new Animated.Value(1)).current;
   const closeButtonOffset = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    selectTabScreen(layoutState.tab, setTabScreen);
-
     if (showMenu) {
       onCloseMenu();
     }
+
+    if (
+      layoutState.tab === TAB_SCREENS.Home &&
+      layoutState.params?.refresh === true
+    ) {
+      reload();
+    }
+
+    selectTabScreen(layoutState.tab, layoutState.params);
   }, [layoutState]);
 
   useEffect(() => {
+    if (
+      homeState.storyCategories?.length > 0 &&
+      homeState.authors?.length > 0 &&
+      homeState.translators?.length > 0 &&
+      homeState.speakers?.length > 0
+    ) {
+      setStoryCategories(homeState.storyCategories);
+      setAuthors(homeState.authors);
+      setTranslators(homeState.translators);
+      setSpeakers(homeState.speakers);
+      setInitialized(true);
+    } else if (
+      homeState.storyCategories?.length === 0 ||
+      homeState.authors?.length === 0 ||
+      homeState.translators?.length === 0 ||
+      homeState.speakers?.length === 0
+    ) {
+      setInitialized(false);
+    }
+  }, [homeState]);
+
+  useEffect(() => {
     initialize();
+
+    return () => {
+      clearInterval(interval);
+    };
   }, []);
 
-  setInterval(() => {
+  const interval = setInterval(() => {
     initialize();
   }, 600000);
 
   const initialize = async () => {
-    const settings = new Settings();
-
-    await settings.updateToken(null);
     await LoginService.login();
-    const result = await getItems();
-
-    setInitialized(result);
   };
 
-  const getItems = async () => {
-    const result = await DashboardService.getItems();
+  const reload = async () => {
+    setInitialized(null);
+    await initialize();
 
-    if (
-      result &&
-      result.storyCategories?.length > 0 &&
-      result.authors?.length > 0 &&
-      result.translators?.length > 0 &&
-      result.speakers?.length > 0
-    ) {
-      setStoryCategories(result.storyCategories);
-      setAuthors(result.authors);
-      setTranslators(result.translators);
-      setSpeakers(result.speakers);
-
-      return true;
-    }
-
-    return false;
+    dispatch(getHomeItems());
+    dispatch(setParamsAction({}));
   };
 
   BackHandler.addEventListener('hardwareBackPress', function () {
@@ -122,12 +141,16 @@ const HomeScreen = ({navigation}) => {
     return false;
   });
 
-  const selectTabScreen = (selectedTab, setTabScreen) => {
+  const selectTabScreen = (selectedTab, params = {}) => {
     let selectedTabScreen;
 
     switch (selectedTab) {
       case TABS.Home:
         selectedTabScreen = TAB_SCREENS.Home;
+
+        break;
+      case TABS.Settings:
+        selectedTabScreen = TAB_SCREENS.Settings;
 
         break;
       case TABS.About:
@@ -194,7 +217,9 @@ const HomeScreen = ({navigation}) => {
                 onPress={() => {
                   tabScreen === TAB_SCREENS.Home
                     ? onCloseMenu()
-                    : showHomTabScreen();
+                    : showHomTabScreen(
+                        tabScreen === TAB_SCREENS.Settings ? true : false,
+                      );
                 }}>
                 <Image
                   source={
@@ -230,6 +255,8 @@ const HomeScreen = ({navigation}) => {
             speakers={speakers}
           />
         );
+      case TAB_SCREENS.Settings:
+        return <SettingsTabScreen />;
       case TAB_SCREENS.About:
         return <AboutTabScreen />;
       default:
@@ -251,6 +278,21 @@ const HomeScreen = ({navigation}) => {
     );
   };
 
+  const renderLoading = () => {
+    return (
+      <ScrollView
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          height: globalStyles.SIZES.height,
+        }}
+        refreshControl={
+          <RefreshControl refreshing={true} colors={[colors.success]} />
+        }></ScrollView>
+    );
+  };
+
   return (
     <BaseScreen>
       <Sidebar />
@@ -266,6 +308,7 @@ const HomeScreen = ({navigation}) => {
         {renderHeader()}
         {initialized && renderTabScreen()}
         {initialized === false && renderNotInitialized()}
+        {initialized === null && renderLoading()}
       </Animated.View>
     </BaseScreen>
   );

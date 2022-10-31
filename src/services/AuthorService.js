@@ -51,6 +51,32 @@ export const insertItem = async item => {
   return false;
 };
 
+export const sumFileSizes = async () => {
+  let total = 0;
+
+  try {
+    const model = new Model();
+    let items = await model.getFileItems();
+
+    for (let i = 0; i < items?.length; i++) {
+      total += await utils.fileInfo('file:/' + items[i].avatar);
+    }
+  } catch {}
+
+  return total;
+};
+
+export const deleteFiles = async () => {
+  try {
+    const model = new Model();
+    let items = await model.getFileItems();
+
+    for (let i = 0; i < items?.length; i++) {
+      await utils.deleteFile('file:/' + items[i].avatar);
+    }
+  } catch {}
+};
+
 const handleGet = async id => {
   try {
     const model = new Model();

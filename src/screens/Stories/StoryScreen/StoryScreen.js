@@ -18,7 +18,7 @@ import {SoundPlayer, utils} from '../../../utils';
 import images from '../../../theme/images';
 
 const StoryScreen = ({route, navigation}) => {
-  const [item, setItem] = useState(null);
+  const [item, setItem] = useState(false);
   const [audio, setAudio] = useState(null);
   const {colors} = useTheme();
   const {id} = route.params;
@@ -77,7 +77,7 @@ const StoryScreen = ({route, navigation}) => {
   });
 
   useEffect(() => {
-    if (item === false) {
+    if (item === null) {
       navigation.navigate(CALLBACK_PAGE);
     }
   }, [item]);
@@ -100,21 +100,19 @@ const StoryScreen = ({route, navigation}) => {
     if (data) {
       data.storyItems = await StoryItemService.getItems(id);
 
-      if (data.storyItems) {
-        for (let i = 0; i < data.storyItems.length; i++) {
-          if (
-            data.storyItems[i].type === StoryItemType.IMAGE &&
-            data.storyItems[i].content
-          ) {
-            const {width, height} = await utils.getImageSize(
-              `file://${data.storyItems[i].content}`,
-            );
-            const newWidth = SIZES.width - SIZES.padding1 - SIZES.padding1;
-            const newHeight = (height / width) * newWidth;
+      for (let i = 0; i < data.storyItems?.length; i++) {
+        if (
+          data.storyItems[i].type === StoryItemType.IMAGE &&
+          data.storyItems[i].content
+        ) {
+          const {width, height} = await utils.getImageSize(
+            `file://${data.storyItems[i].content}`,
+          );
+          const newWidth = SIZES.width - SIZES.padding1 - SIZES.padding1;
+          const newHeight = (height / width) * newWidth;
 
-            data.storyItems[i].width = newWidth;
-            data.storyItems[i].height = newHeight;
-          }
+          data.storyItems[i].width = newWidth;
+          data.storyItems[i].height = newHeight;
         }
       }
     }
@@ -122,20 +120,17 @@ const StoryScreen = ({route, navigation}) => {
     setItem(data);
   };
 
-  const downloadMp3 = async url => {
-    const filename = new Date().valueOf() + '.jpg';
+  const getAudio = async () => {
+    const result = await StoryService.downloadAudioItem(item);
 
-    setAudio(await utils.downloadAsync(url, filename));
+    if (result) {
+      setAudio(result);
+    }
   };
 
   const renderLeftContainer = () => (
     <View>
-      <TouchableOpacity
-        onPress={() =>
-          downloadMp3(
-            'https://dl.mahanmusic.net/Song/iran/National-Anthem-of-the-Islamic-Republic-of-Iran.mp3',
-          )
-        }>
+      <TouchableOpacity onPress={() => getAudio()}>
         <Image source={images.volume} style={styles.volumeIcon}></Image>
       </TouchableOpacity>
     </View>

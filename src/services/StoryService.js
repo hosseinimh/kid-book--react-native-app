@@ -6,6 +6,7 @@ import {utils} from '../utils';
 
 const resourceThumbnailUrl = ResourceUrls.STORY_THUMBNAIL;
 const resourceImageUrl = ResourceUrls.STORY_IMAGE;
+const resourceAudioUrl = ResourceUrls.STORY_AUDIO;
 
 export const getItem = async id => {
   if ((result = await handleGet(id))) {
@@ -54,10 +55,64 @@ export const insertItem = async item => {
       item.title,
       item.thumbnail,
       item.image,
+      item.audio,
     );
   } catch {}
 
   return false;
+};
+
+export const downloadAudioItem = async item => {
+  let audio = null;
+
+  try {
+    const model = new Model();
+    const isConnected = await SettingsService.isConnected();
+
+    if (!isConnected) {
+      return false;
+    }
+
+    if (item.server_audio) {
+      audio = await utils.downloadAudio(
+        `${resourceAudioUrl}/${item.server_audio}`,
+      );
+    }
+
+    return (await model.update(item.id, audio)) ? audio : null;
+  } catch {}
+
+  return false;
+};
+
+export const sumFileSizes = async () => {
+  let total = 0;
+
+  try {
+    const model = new Model();
+    let items = await model.getFileItems();
+
+    for (let i = 0; i < items?.length; i++) {
+      total += await utils.fileInfo('file:/' + items[i].thumbnail);
+      total += await utils.fileInfo('file:/' + items[i].image);
+      total += await utils.fileInfo('file:/' + items[i].audio);
+    }
+  } catch {}
+
+  return total;
+};
+
+export const deleteFiles = async () => {
+  try {
+    const model = new Model();
+    let items = await model.getFileItems();
+
+    for (let i = 0; i < items?.length; i++) {
+      await utils.deleteFile('file:/' + items[i].thumbnail);
+      await utils.deleteFile('file:/' + items[i].image);
+      await utils.deleteFile('file:/' + items[i].audio);
+    }
+  } catch {}
 };
 
 const handleGet = async id => {
@@ -72,6 +127,8 @@ const handleGet = async id => {
         title: record.title,
         thumbnail: record.thumbnail,
         image: record.image,
+        server_audio: record.server_audio,
+        audio: record.audio,
       };
     }
   } catch {}
@@ -105,6 +162,7 @@ const handleGetServer = async id => {
         result.item.title,
         thumbnail,
         image,
+        result.item.audio,
       );
 
       return {
@@ -113,6 +171,8 @@ const handleGetServer = async id => {
         title: result.item.title,
         thumbnail,
         image,
+        server_audio: result.item.audio,
+        audio: null,
       };
     }
   } catch {}
@@ -135,6 +195,8 @@ const handleGetItems = async (storyCategroyId, page) => {
           title: record.title,
           thumbnail: record.thumbnail,
           image: record.image,
+          server_audio: record.server_audio,
+          audio: record.audio,
         });
       });
     }
@@ -173,6 +235,7 @@ const handleGetServerItems = async (storyCategroyId, page) => {
             item.title,
             thumbnail,
             image,
+            item.audio,
           );
         }
 
@@ -182,6 +245,8 @@ const handleGetServerItems = async (storyCategroyId, page) => {
           title: item.title,
           thumbnail: thumbnail,
           image: image,
+          server_audio: item.audio,
+          audio: null,
         });
       });
     }

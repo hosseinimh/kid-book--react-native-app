@@ -9,7 +9,10 @@ import images from '../../../theme/images';
 
 const PanelScreen = ({
   navigation,
+  navigateScreen,
+  navigateParams,
   children,
+  headerShown = true,
   headerTitle,
   rightContainer,
   leftContainer,
@@ -34,6 +37,14 @@ const PanelScreen = ({
     },
   });
 
+  const goBack = () => {
+    if (navigateScreen) {
+      navigation.navigate(navigateScreen, {...navigateParams});
+    } else {
+      navigation.goBack();
+    }
+  };
+
   const renderRightContainer = () => {
     if (rightContainer) {
       return rightContainer();
@@ -41,7 +52,7 @@ const PanelScreen = ({
 
     return (
       <View>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => goBack()}>
           <Image source={images.arrowRight} style={styles.image}></Image>
         </TouchableOpacity>
       </View>
@@ -58,12 +69,14 @@ const PanelScreen = ({
 
   return (
     <BaseScreen>
-      <Header
-        navigation={navigation}
-        title={headerTitle}
-        rightContainer={() => renderRightContainer()}
-        leftContainer={() => renderLeftContainer()}
-      />
+      {headerShown && (
+        <Header
+          navigation={navigation}
+          title={headerTitle}
+          rightContainer={() => renderRightContainer()}
+          leftContainer={() => renderLeftContainer()}
+        />
+      )}
       <View style={styles.container}>
         <Box containerStyle={styles.boxContainer}>{children}</Box>
       </View>

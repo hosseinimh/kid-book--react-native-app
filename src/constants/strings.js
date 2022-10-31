@@ -9,12 +9,14 @@ export const downloader = {
 
 export const tabScreens = {
   home: 'کتاب داستان صوتی کودکان',
+  settings: 'تنظیمات',
   about: 'درباره',
 };
 
 export const tabLinks = {
   home: 'خانه',
   theme: 'قالب',
+  settings: 'تنظیمات',
   about: 'درباره',
 };
 
@@ -24,6 +26,11 @@ export const homeTabScreen = {
   translators: 'مترجمان',
   speakers: 'گویندگان',
   viewAll: 'نمایش همه',
+};
+
+export const settingsScreen = {
+  volumeText: 'حجم داده روی گوشی',
+  reset: 'حذف داده‌ها',
 };
 
 export const authorScreen = {

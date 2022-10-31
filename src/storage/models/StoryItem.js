@@ -1,3 +1,4 @@
+import {StoryItemType} from '../../constants';
 import {utils} from '../../utils';
 import SqliteConnection from './SqliteConnection';
 
@@ -22,9 +23,15 @@ class StoryItem {
     return items?.length > 0 ? items[0] : null;
   };
 
-  getItems = async (storyId, pageNumber = 1) => {
+  getItems = async storyId => {
     return await sqlite.select(
       `SELECT * FROM ${tblName} WHERE story_id=${storyId} ORDER BY id DESC`,
+    );
+  };
+
+  getFileItems = async () => {
+    return await sqlite.select(
+      `SELECT content FROM ${tblName} WHERE type LIKE "${StoryItemType.IMAGE}" AND content IS NOT null`,
     );
   };
 

@@ -30,6 +30,12 @@ class Speaker {
     );
   };
 
+  getFileItems = async () => {
+    return await sqlite.select(
+      `SELECT avatar FROM ${tblName} WHERE avatar IS NOT null`,
+    );
+  };
+
   insert = async (serverSpeakerId, name, family, description, avatar) => {
     let dateTime = utils.getDateTime();
 

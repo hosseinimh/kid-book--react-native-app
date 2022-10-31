@@ -1,5 +1,5 @@
 import {Image, PermissionsAndroid} from 'react-native';
-import RNFS from 'react-native-fs';
+import RNFS, {stat} from 'react-native-fs';
 
 import {TABS} from '../constants';
 import {TAB_SCREENS} from '../constants';
@@ -12,6 +12,10 @@ const tabScreenTitle = tabScreen => {
   switch (tabScreen) {
     case TAB_SCREENS.Home:
       title = tabScreens.home;
+
+      break;
+    case TAB_SCREENS.Settings:
+      title = tabScreens.settings;
 
       break;
     case TAB_SCREENS.About:
@@ -35,6 +39,10 @@ const tabText = tab => {
       break;
     case TABS.Theme:
       text = tabLinks.theme;
+
+      break;
+    case TABS.Settings:
+      text = tabLinks.settings;
 
       break;
     case TABS.About:
@@ -133,9 +141,14 @@ const downloadImage = async url => {
   return await downloadAsync(url, filename);
 };
 
+const downloadAudio = async url => {
+  const filename = new Date().valueOf() + '.mp3';
+
+  return await downloadAsync(url, filename);
+};
+
 const deleteFile = async filename => {
   try {
-    filename = `${RNFS.DocumentDirectoryPath}/${filename}`;
     let result = await RNFS.exists(filename);
 
     if (result) {
@@ -144,6 +157,16 @@ const deleteFile = async filename => {
   } catch {}
 
   return false;
+};
+
+const fileInfo = async filename => {
+  try {
+    const result = await stat(filename);
+
+    return result.size;
+  } catch {}
+
+  return 0;
 };
 
 const getImageSize = uri =>
@@ -160,6 +183,20 @@ const getImageSize = uri =>
 const prepareStr = (text, defaultValue = '""') =>
   text ? `"${text}"` : defaultValue;
 
+const formatBytes = (bytes, decimals = 2) => {
+  if (!+bytes) {
+    return '0 Bytes';
+  }
+
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+};
+
 const utils = {
   tabScreenTitle,
   tabText,
@@ -168,9 +205,12 @@ const utils = {
   en2faDigits,
   downloadAsync,
   deleteFile,
+  fileInfo,
   downloadImage,
+  downloadAudio,
   getImageSize,
   prepareStr,
+  formatBytes,
 };
 
 export default utils;

@@ -1,5 +1,6 @@
 const TAB_SCREENS = {
   Home: 'Home',
+  Settings: 'Settings',
   About: 'About',
 };
 
