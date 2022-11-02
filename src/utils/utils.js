@@ -110,19 +110,7 @@ const checkPermission = async () => {
   return false;
 };
 
-const downloadAsync = async (url, filename, onBegin, onProgress) => {
-  let i = 0;
-  let result = null;
-
-  do {
-    i++;
-    result = await handleDownloadAsync(url, filename, onBegin, onProgress);
-  } while (i < 10 && !result);
-
-  return result;
-};
-
-const handleDownloadAsync = async (
+const downloadAsync = async (
   url,
   filename,
   onBegin = null,

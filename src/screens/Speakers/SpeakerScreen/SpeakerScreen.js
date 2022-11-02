@@ -64,7 +64,15 @@ const SpeakerScreen = ({route, navigation}) => {
   }, []);
 
   const getItem = async () => {
-    setItem(await SpeakerService.getItem(id));
+    let result = await SpeakerService.getItem(id);
+
+    if (result && !result.avatar) {
+      await SpeakerService.downloadAvatar(result);
+
+      result = await SpeakerService.getItem(id);
+    }
+
+    setItem(result ?? false);
   };
 
   return (

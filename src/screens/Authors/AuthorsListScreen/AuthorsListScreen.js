@@ -1,101 +1,50 @@
 import React, {useEffect, useState} from 'react';
-import {
-  Text,
-  FlatList,
-  View,
-  TouchableOpacity,
-  Image,
-  StyleSheet,
-  RefreshControl,
-} from 'react-native';
+import {FlatList, View, StyleSheet, RefreshControl} from 'react-native';
 
 import {utils} from '../../../utils';
-import {Screens} from '../../../constants';
 import * as globalStyles from '../../../theme/style';
 import {useTheme} from '../../../hooks';
 import {PanelScreen} from '../../';
 import {homeTabScreen as strings} from '../../../constants/strings';
 import {AuthorService} from '../../../services';
+import Author from './Author';
 
 const AuthorsListScreen = ({navigation}) => {
-  const [data, setData] = useState([]);
+  const [items, setItems] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const {colors} = useTheme();
   const SIZES = globalStyles.SIZES;
   const styles = StyleSheet.create({
-    imageContainer: [
-      globalStyles.columnListItemThumbnailContainer,
-      {backgroundColor: colors.background},
-    ],
-    txtContainer: {
-      display: 'flex',
-      flexDirection: 'column',
-      flex: 1,
-    },
-    name: [globalStyles.columnListItemTitle, {color: colors.text}],
-    description: [globalStyles.columnListItemBody, {color: colors.text}],
     divider: [globalStyles.divider, {backgroundColor: colors.border}],
   });
 
   useEffect(() => {
-    loadData();
-  }, []);
+    loadItems();
+  }, [currentPage]);
 
   const loadMore = () => {
     setCurrentPage(currentPage + 1);
-    loadData();
   };
 
-  const loadData = async () => {
-    let items = await AuthorService.getItems(currentPage);
+  const loadItems = async () => {
+    let records = await AuthorService.getItems(currentPage);
 
-    if (items) {
-      setData(utils.uniqueArray(items));
+    if (records) {
+      setItems(utils.uniqueArray([...items, ...records]));
     }
 
     setLoading(false);
   };
 
-  const renderItem = ({item, index}) => {
-    return (
-      <View key={index} style={globalStyles.columnListItem}>
-        <View style={styles.imageContainer}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate(Screens.AUTHOR, {id: item.id})}>
-            {item.avatar && (
-              <Image
-                style={globalStyles.columnListItemThumbnail}
-                source={{
-                  uri: `file://${item.avatar}`,
-                }}
-                resizeMode="cover"
-              />
-            )}
-            {!item.avatar && (
-              <View style={globalStyles.columnListItemThumbnail} />
-            )}
-          </TouchableOpacity>
-        </View>
-        <View style={styles.txtContainer}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate(Screens.AUTHOR, {id: item.id})}>
-            <Text style={styles.name} numberOfLines={1}>
-              {utils.en2faDigits(`${item.name} ${item.family}`)}
-            </Text>
-            <Text style={styles.description} numberOfLines={1}>
-              {utils.en2faDigits(`${item.description}`)}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
+  const renderItem = ({item}) => (
+    <Author key={item.id} navigation={navigation} author={item} />
+  );
 
   return (
     <PanelScreen navigation={navigation} headerTitle={strings.authors}>
       <FlatList
-        data={data}
+        data={items}
         renderItem={renderItem}
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
@@ -103,7 +52,7 @@ const AuthorsListScreen = ({navigation}) => {
         decelerationRate={'fast'}
         snapToInterval={SIZES.height / 2 - SIZES.padding1 - 5}
         onEndReached={loadMore}
-        onEndReachedThreshold={2}
+        onEndReachedThreshold={5}
         ItemSeparatorComponent={() => <View style={styles.divider}></View>}
         refreshControl={
           <RefreshControl
@@ -111,8 +60,8 @@ const AuthorsListScreen = ({navigation}) => {
             colors={[colors.success]}
             onRefresh={() => {
               setLoading(true);
+              setItems([]);
               setCurrentPage(1);
-              loadData();
             }}
           />
         }

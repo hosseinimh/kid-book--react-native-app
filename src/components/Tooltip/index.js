@@ -6,7 +6,7 @@ import {useTheme} from '../../hooks';
 import {useEffect} from 'react';
 
 const Tooltip = ({text, top = 0, left = 0, show = false, onFinished}) => {
-  const [showTooltip, setShowTooltip] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(show);
   const {colors} = useTheme();
   const {SIZES} = globalStyles;
   let timeout;
@@ -29,28 +29,28 @@ const Tooltip = ({text, top = 0, left = 0, show = false, onFinished}) => {
   });
 
   useEffect(() => {
-    setShowTooltip(show);
-  }, [show]);
-
-  useEffect(() => {
-    if (showTooltip) {
+    if (show) {
       timeout = setTimeout(() => {
         if (typeof onFinished === 'function') {
           onFinished();
         }
 
-        setShowTooltip(false);
+        show = false;
       }, 2500);
     } else {
+      if (typeof onFinished === 'function') {
+        onFinished();
+      }
+
       clearTimeout(timeout);
     }
 
     return () => {
       clearTimeout(timeout);
     };
-  }, [showTooltip]);
+  }, [show]);
 
-  if (showTooltip) {
+  if (show) {
     return (
       <View style={styles.container}>
         <Text style={styles.text}>{text}</Text>

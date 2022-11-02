@@ -64,7 +64,15 @@ const TranslatorScreen = ({route, navigation}) => {
   }, []);
 
   const getItem = async () => {
-    setItem(await TranslatorService.getItem(id));
+    let result = await TranslatorService.getItem(id);
+
+    if (result && !result.avatar) {
+      await TranslatorService.downloadAvatar(result);
+
+      result = await TranslatorService.getItem(id);
+    }
+
+    setItem(result ?? false);
   };
 
   return (

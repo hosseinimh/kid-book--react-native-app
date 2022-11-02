@@ -58,7 +58,7 @@ export const downloadAudio = async (item, onBegin, onProgress) => {
     const isConnected = await SettingsService.isConnected();
 
     if (!isConnected) {
-      return false;
+      return null;
     }
 
     if (item.server_audio) {
@@ -72,7 +72,7 @@ export const downloadAudio = async (item, onBegin, onProgress) => {
     return (await model.updateAudio(item.id, audio)) ? audio : null;
   } catch {}
 
-  return false;
+  return null;
 };
 
 export const downloadThumbnail = async item => {
@@ -83,7 +83,7 @@ export const downloadThumbnail = async item => {
     const isConnected = await SettingsService.isConnected();
 
     if (!isConnected) {
-      return false;
+      return null;
     }
 
     if (item.server_thumbnail) {
@@ -95,7 +95,7 @@ export const downloadThumbnail = async item => {
     return (await model.updateThumbnail(item.id, thumbnail)) ? image : null;
   } catch {}
 
-  return false;
+  return null;
 };
 
 export const downloadImage = async item => {
@@ -106,7 +106,7 @@ export const downloadImage = async item => {
     const isConnected = await SettingsService.isConnected();
 
     if (!isConnected) {
-      return false;
+      return null;
     }
 
     if (item.server_image) {
@@ -118,7 +118,7 @@ export const downloadImage = async item => {
     return (await model.updateImage(item.id, image)) ? image : null;
   } catch {}
 
-  return false;
+  return null;
 };
 
 export const sumFileSizes = async () => {

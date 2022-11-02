@@ -5,6 +5,7 @@ import menu from '../assets/images/menu.png';
 import close from '../assets/images/close.png';
 import arrowRight from '../assets/images/arrow-right.png';
 import volume from '../assets/images/volume.png';
+import mute from '../assets/images/mute.png';
 import sun from '../assets/images/theme-light.png';
 import moon from '../assets/images/theme-dark.png';
 import about from '../assets/images/about.png';
@@ -20,6 +21,7 @@ const images = {
   close,
   arrowRight,
   volume,
+  mute,
   sun,
   moon,
   about,

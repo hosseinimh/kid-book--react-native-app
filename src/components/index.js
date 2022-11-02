@@ -6,7 +6,6 @@ import HorizontalProgressBar from './HorizontalProgressBar';
 import FullWidthButton from './FullWidthButton';
 import AudioPlayer from './AudioPlayer';
 import Tooltip from './Tooltip';
-import CircularProgress from './CircularProgress';
 
 export {
   Sidebar,
@@ -17,5 +16,4 @@ export {
   FullWidthButton,
   AudioPlayer,
   Tooltip,
-  CircularProgress,
 };

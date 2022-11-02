@@ -15,9 +15,10 @@ import * as globalStyles from '../../../theme/style';
 import {useTheme} from '../../../hooks';
 import {PanelScreen} from '../../';
 import {StoryService} from '../../../services';
+import Story from './Story';
 
 const StoriesListScreen = ({route, navigation}) => {
-  const [data, setData] = useState([]);
+  const [items, setItems] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const {colors} = useTheme();
@@ -39,60 +40,31 @@ const StoriesListScreen = ({route, navigation}) => {
   });
 
   useEffect(() => {
-    loadData();
-  }, []);
+    loadItems();
+  }, [currentPage]);
 
   const loadMore = () => {
     setCurrentPage(currentPage + 1);
-    loadData();
   };
 
-  const loadData = async () => {
-    let items = await StoryService.getItems(storyCategoryId, currentPage);
+  const loadItems = async () => {
+    let records = await StoryService.getItems(storyCategoryId, currentPage);
 
-    if (items) {
-      setData(utils.uniqueArray(items));
+    if (records) {
+      setItems(utils.uniqueArray([...items, ...records]));
     }
 
     setLoading(false);
   };
 
-  const renderItem = ({item, index}) => {
-    return (
-      <View key={index} style={globalStyles.columnListItem}>
-        <View style={styles.imageContainer}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate(Screens.STORY, {id: item.id})}>
-            {item.image && (
-              <Image
-                style={globalStyles.columnListItemThumbnail}
-                source={{
-                  uri: `file://${item.image}`,
-                }}
-                resizeMode="cover"
-              />
-            )}
-            {!item.image && (
-              <View style={globalStyles.columnListItemThumbnail} />
-            )}
-          </TouchableOpacity>
-        </View>
-        <View style={styles.txtContainer}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate(Screens.STORY, {id: item.id})}>
-            <Text style={styles.title} numberOfLines={1}>
-              {utils.en2faDigits(item.title)}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
+  const renderItem = ({item}) => (
+    <Story key={item.id} navigation={navigation} story={item} />
+  );
 
   return (
     <PanelScreen navigation={navigation} headerTitle={headerTitle}>
       <FlatList
-        data={data}
+        data={items}
         renderItem={renderItem}
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
@@ -100,7 +72,7 @@ const StoriesListScreen = ({route, navigation}) => {
         decelerationRate={'fast'}
         snapToInterval={SIZES.height / 2 - SIZES.padding1 - 5}
         onEndReached={loadMore}
-        onEndReachedThreshold={2}
+        onEndReachedThreshold={5}
         ItemSeparatorComponent={() => <View style={styles.divider}></View>}
         refreshControl={
           <RefreshControl
@@ -108,8 +80,8 @@ const StoriesListScreen = ({route, navigation}) => {
             colors={[colors.success]}
             onRefresh={() => {
               setLoading(true);
+              setItems([]);
               setCurrentPage(1);
-              loadData();
             }}
           />
         }

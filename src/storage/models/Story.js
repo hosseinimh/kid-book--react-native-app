@@ -24,7 +24,7 @@ class Story {
 
   getItems = async (storyCategoryId, pageNumber = 1) => {
     return await sqlite.select(
-      `SELECT * FROM ${tblName} WHERE story_category_id=${storyCategoryId} ORDER BY id DESC LIMIT ${
+      `SELECT * FROM ${tblName} WHERE story_category_id=${storyCategoryId} ORDER BY CAST(id AS INTEGER) LIMIT ${
         (pageNumber - 1) * PAGE_ITEMS
       },${PAGE_ITEMS}`,
     );

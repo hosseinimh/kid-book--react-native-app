@@ -55,7 +55,7 @@ export const downloadAvatar = async item => {
     const isConnected = await SettingsService.isConnected();
 
     if (!isConnected) {
-      return false;
+      return null;
     }
 
     if (item.server_avatar) {
@@ -65,7 +65,7 @@ export const downloadAvatar = async item => {
     return (await model.updateAvatar(item.id, avatar)) ? avatar : null;
   } catch {}
 
-  return false;
+  return null;
 };
 
 export const sumFileSizes = async () => {

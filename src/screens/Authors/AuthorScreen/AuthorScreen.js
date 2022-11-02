@@ -64,7 +64,15 @@ const AuthorScreen = ({route, navigation}) => {
   }, []);
 
   const getItem = async () => {
-    setItem(await AuthorService.getItem(id));
+    let result = await AuthorService.getItem(id);
+
+    if (result && !result.avatar) {
+      await AuthorService.downloadAvatar(result);
+
+      result = await AuthorService.getItem(id);
+    }
+
+    setItem(result ?? false);
   };
 
   return (

@@ -6,6 +6,10 @@ export class StoryItem extends Entity {
     super();
   }
 
+  async get(id) {
+    return await this.handlePost(API_URLS.FETCH_STORY_ITEM + '/' + id);
+  }
+
   async getAll(storyId) {
     return await this.handlePost(API_URLS.FETCH_STORY_ITEMS + '/' + storyId);
   }

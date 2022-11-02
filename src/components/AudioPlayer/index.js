@@ -13,6 +13,7 @@ const AudioPlayer = ({filename, containerStyle}) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [time, setTime] = useState(0);
   const [endTime, setEndTime] = useState(0);
+  const [mute, setMute] = useState(false);
   const {colors} = useTheme();
   const {SIZES, FONTS} = globalStyles;
 
@@ -132,17 +133,18 @@ const AudioPlayer = ({filename, containerStyle}) => {
       return;
     }
 
-    if (!isPlaying) {
+    if (isPlaying) {
+      audio?.pause();
+      clearInterval(playInterval);
+    } else {
+      audio?.setVolume(1);
       audio?.play();
       playInterval = setInterval(() => {
         audio?.getCurrentTime(seconds => setTime(Math.floor(seconds)));
       }, 500);
-      setIsPlaying(true);
-    } else {
-      audio?.pause();
-      clearInterval(playInterval);
-      setIsPlaying(false);
     }
+
+    setIsPlaying(!isPlaying);
   };
 
   const changeCurrentTime = seconds => {
@@ -156,6 +158,20 @@ const AudioPlayer = ({filename, containerStyle}) => {
 
     audio?.setCurrentTime(seconds);
     setTime(seconds);
+  };
+
+  const toggleMute = () => {
+    if (!audio) {
+      return;
+    }
+
+    if (mute) {
+      audio.setVolume(1);
+    } else {
+      audio.setVolume(0);
+    }
+
+    setMute(!mute);
   };
 
   return (
@@ -192,10 +208,10 @@ const AudioPlayer = ({filename, containerStyle}) => {
           </View>
           <View
             style={[styles.iconContainer, {position: 'absolute', right: 0}]}>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={toggleMute}>
               <Image
                 style={styles.icon}
-                source={images.volume}
+                source={mute ? images.mute : images.volume}
                 resizeMode="stretch"
               />
             </TouchableOpacity>

@@ -8,27 +8,28 @@ import {
   ImageBackground,
   TouchableOpacity,
 } from 'react-native';
+import CircularProgress from 'react-native-circular-progress-indicator';
 
 import * as globalStyles from '../../../theme/style';
 import {useTheme} from '../../../hooks';
 import {PanelScreen} from '../../';
 import {StoryItemService, StoryService} from '../../../services';
-import {Screens, StoryItemType} from '../../../constants';
+import {Screens} from '../../../constants';
 import {utils} from '../../../utils';
 import images from '../../../theme/images';
 import {AudioPlayer, Tooltip} from '../../../components';
-import CircularProgress from 'react-native-circular-progress-indicator';
+import StoryItem from './StoryItem';
 
 const StoryScreen = ({route, navigation}) => {
-  const [item, setItem] = useState(false);
-  const [audio, setAudio] = useState(null);
+  const [item, setItem] = useState(null);
+  const [storyItems, setStoryItems] = useState([]);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipText, setTooltipText] = useState('');
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
   const {colors} = useTheme();
-  const id = route?.params?.id;
   const {SIZES, FONTS} = globalStyles;
-  const CALLBACK_PAGE = Screens.STORIES_LIST;
+  const id = route?.params?.id;
 
   const styles = StyleSheet.create({
     container: {
@@ -47,8 +48,8 @@ const StoryScreen = ({route, navigation}) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      width: 35,
-      height: 35,
+      width: 30,
+      height: 30,
     },
     imageBackground: {
       width: '100%',
@@ -69,31 +70,11 @@ const StoryScreen = ({route, navigation}) => {
     },
     titleContainer: {marginVertical: SIZES.padding1},
     title: {...FONTS.h2, color: colors.text},
-    txtContentContainer: {
-      alignSelf: 'flex-end',
-      marginVertical: 5,
-      width: '100%',
-    },
-    txtFaContent: {...FONTS.body4, color: colors.text, textAlign: 'right'},
-    txtEnContent: {...FONTS.body4, color: colors.text, textAlign: 'left'},
-    imageContentContainer: {
-      marginVertical: SIZES.padding1,
-      width: '100%',
-      borderRadius: 5,
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'center',
-    },
-    imageContent: {
-      height: 300,
-      width: '100%',
-      borderRadius: 5,
-    },
   });
 
   useEffect(() => {
-    if (item === null) {
-      navigation.navigate(CALLBACK_PAGE);
+    if (item === false) {
+      navigation.navigate(Screens.HOME);
     }
   }, [item]);
 
@@ -102,53 +83,54 @@ const StoryScreen = ({route, navigation}) => {
   }, []);
 
   const getItem = async () => {
-    let data = await StoryService.getItem(id);
+    let result = await StoryService.getItem(id);
 
-    if (data) {
-      data.storyItems = await StoryItemService.getItems(id);
-
-      for (let i = 0; i < data.storyItems?.length; i++) {
-        if (
-          data.storyItems[i].type === StoryItemType.IMAGE &&
-          data.storyItems[i].content
-        ) {
-          const {width, height} = await utils.getImageSize(
-            `file://${data.storyItems[i].content}`,
-          );
-          const newWidth = SIZES.width - SIZES.padding1 - SIZES.padding1;
-          const newHeight = (height / width) * newWidth;
-
-          data.storyItems[i].width = newWidth;
-          data.storyItems[i].height = newHeight;
-        }
+    if (result) {
+      if (!result.thumbnail) {
+        await StoryService.downloadThumbnail(result);
       }
+
+      if (!result.image) {
+        await StoryService.downloadImage(result);
+      }
+
+      if (!result.thumbnail || !result.image) {
+        result = await StoryService.getItem(id);
+      }
+
+      setStoryItems(await StoryItemService.getItems(id));
     }
 
-    setItem(data);
-
-    if (data?.audio) {
-      setAudio(data.audio);
-    }
+    setItem(result ?? false);
   };
 
   const getAudio = async () => {
     if (!item.audio) {
-      setShowTooltip(true);
+      setProgress(0);
+      setTooltipText('');
       setDownloading(true);
 
-      const result = await StoryService.downloadAudioItem(item, onProgress);
+      const result = await StoryService.downloadAudio(
+        item,
+        onBegin,
+        onProgress,
+      );
 
       setDownloading(false);
 
       if (result) {
-        setAudio(result);
+        setItem(await StoryService.getItem(id));
       }
     }
   };
 
+  const onBegin = result => {
+    setShowTooltip(true);
+    setTooltipText(result?.contentLength);
+  };
+
   const onProgress = result => {
-    console.log(result);
-    setProgress(parseInt(result.progress));
+    setProgress(parseInt(result.percent));
   };
 
   const renderLeftContainer = () => (
@@ -157,11 +139,15 @@ const StoryScreen = ({route, navigation}) => {
         {downloading && (
           <View style={styles.progressContainer}>
             <CircularProgress
+              maxValue={100}
               radius={15}
               value={progress}
               inActiveStrokeColor={colors.border}
               inActiveStrokeOpacity={0.2}
+              stroke
               showProgressValue={false}
+              inActiveStrokeWidth={5}
+              activeStrokeWidth={5}
             />
           </View>
         )}
@@ -177,7 +163,7 @@ const StoryScreen = ({route, navigation}) => {
   return (
     <>
       <Tooltip
-        text={'12 سیتا یستنا سنیتا ستیا 3 KB'}
+        text={utils.formatBytes(tooltipText)}
         top={35}
         left={8}
         show={showTooltip}
@@ -189,7 +175,7 @@ const StoryScreen = ({route, navigation}) => {
         leftContainer={() => renderLeftContainer()}>
         <ScrollView
           showsVerticalScrollIndicator={false}
-          style={{marginBottom: audio ? 125 : 0}}>
+          style={{marginBottom: item?.audio ? 125 : 0}}>
           <View>
             {item?.image && (
               <ImageBackground
@@ -214,46 +200,16 @@ const StoryScreen = ({route, navigation}) => {
                   {item?.title ? utils.en2faDigits(item?.title) : ''}
                 </Text>
               </View>
-              {item?.storyItems?.map((item, index) => (
-                <React.Fragment key={index}>
-                  {item.type === StoryItemType.TEXT_EN && (
-                    <View style={styles.txtContentContainer}>
-                      <Text style={styles.txtEnContent}>
-                        {item?.content ?? ''}
-                      </Text>
-                    </View>
-                  )}
-                  {item.type === StoryItemType.TEXT_FA && (
-                    <View style={styles.txtContentContainer}>
-                      <Text style={styles.txtFaContent}>
-                        {item?.content ? utils.en2faDigits(item.content) : ''}
-                      </Text>
-                    </View>
-                  )}
-                  {item.type === StoryItemType.IMAGE && item?.content && (
-                    <View style={styles.imageContentContainer}>
-                      <Image
-                        style={{
-                          ...styles.imageContent,
-                          width: item.width,
-                          height: item.height,
-                        }}
-                        source={{
-                          uri: `file://${item?.content}`,
-                        }}
-                        resizeMode="stretch"
-                      />
-                    </View>
-                  )}
-                </React.Fragment>
+              {storyItems?.map(item => (
+                <StoryItem key={item.id} storyItem={item} />
               ))}
             </View>
           </View>
         </ScrollView>
       </PanelScreen>
-      {audio && (
+      {item?.audio && (
         <View>
-          <AudioPlayer filename={audio} containerStyle={{}} />
+          <AudioPlayer filename={item?.audio} containerStyle={{}} />
         </View>
       )}
     </>

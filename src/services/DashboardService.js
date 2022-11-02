@@ -36,10 +36,6 @@ const saveStoryCategories = async items => {
 
       for (let j = 0; j < items[i]?.stories?.length; j++) {
         await StoryService.insertItem(items[i].stories[j]);
-
-        // for (let k = 0; k < items[i]?.stories[j]?.storyItems?.length; k++) {
-        //   await StoryItemService.insertItem(items[i].stories[j].storyItems[k]);
-        // }
       }
     }
   } catch {}

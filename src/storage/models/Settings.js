@@ -14,7 +14,9 @@ function createTableSqls() {
 }
 
 async function handleGet() {
-  let items = await sqlite.select(`SELECT * FROM ${tblName} ORDER BY id DESC`);
+  let items = await sqlite.select(
+    `SELECT * FROM ${tblName} ORDER BY CAST(id AS INTEGER) DESC`,
+  );
 
   return items?.length > 0 ? items[0] : null;
 }
