@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, Image, TouchableOpacity} from 'react-native';
+import {View, Text, Image, TouchableOpacity, StyleSheet} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 
 import images from '../../theme/images';
@@ -9,13 +9,18 @@ import {utils} from '../../utils';
 import {useTheme} from '../../hooks';
 import {appVersion} from '../../../app-config.json';
 import {setThemeAction} from '../../storage/state/layout/layoutActions';
-import * as styles from '../../theme/style';
+import * as globalStyles from '../../theme/style';
 
 const Sidebar = () => {
   const [currentTab, setCurrentTab] = useState(TABS.Home);
   const layoutState = useSelector(state => state.layoutReducer);
   const dispatch = useDispatch();
   const {colors} = useTheme();
+  const styles = StyleSheet.create({
+    tabIcon: [globalStyles.tabIcon, {tintColor: colors.sidebarText}],
+    tabText: [globalStyles.tabText, {color: colors.sidebarText}],
+    versionText: [globalStyles.versionText, {color: colors.sidebarText}],
+  });
 
   const onTab = tab => {
     if (tab === TABS.Theme) {
@@ -43,30 +48,32 @@ const Sidebar = () => {
           style={[
             {
               backgroundColor:
-                currentTab == tab ? colors.sidebarText : colors.transparent,
+                currentTab == tab
+                  ? colors.sidebarText
+                  : colors.sidebarBackground,
             },
-            styles.tabContainer,
+            globalStyles.tabContainer,
           ]}>
           <Image
             source={image}
             style={[
+              styles.tabIcon,
               {
                 tintColor:
                   currentTab == tab
                     ? colors.sidebarBackground
                     : colors.sidebarText,
               },
-              styles.tabIcon,
             ]}></Image>
           <Text
             style={[
+              styles.tabText,
               {
                 color:
                   currentTab == tab
                     ? colors.sidebarBackground
                     : colors.sidebarText,
               },
-              styles.tabText,
             ]}>
             {utils.tabText(tab)}
           </Text>
@@ -76,7 +83,7 @@ const Sidebar = () => {
   };
 
   return (
-    <View style={styles.sidebarContainer}>
+    <View style={globalStyles.sidebarContainer}>
       <View>
         {renderTabButton(TABS.Home, images.home)}
         {renderTabButton(
@@ -87,9 +94,7 @@ const Sidebar = () => {
         {renderTabButton(TABS.About, images.about)}
       </View>
       <View>
-        <Text style={[styles.versionText, {color: colors.sidebarText}]}>
-          {appVersion}
-        </Text>
+        <Text style={styles.versionText}>{appVersion}</Text>
       </View>
     </View>
   );

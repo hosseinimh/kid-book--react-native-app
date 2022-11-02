@@ -37,18 +37,6 @@ export const insertItem = async item => {
       return false;
     }
 
-    if (item.thumbnail) {
-      item.thumbnail = await utils.downloadImage(
-        `${resourceThumbnailUrl}/${item.thumbnail}`,
-      );
-    }
-
-    if (item.image) {
-      item.image = await utils.downloadImage(
-        `${resourceImageUrl}${item.image}`,
-      );
-    }
-
     return await model.insert(
       item.id,
       item.story_category_id,
@@ -62,7 +50,7 @@ export const insertItem = async item => {
   return false;
 };
 
-export const downloadAudioItem = async item => {
+export const downloadAudio = async (item, onBegin, onProgress) => {
   let audio = null;
 
   try {
@@ -75,11 +63,59 @@ export const downloadAudioItem = async item => {
 
     if (item.server_audio) {
       audio = await utils.downloadAudio(
-        `${resourceAudioUrl}/${item.server_audio}`,
+        `${resourceAudioUrl}${item.server_audio}`,
+        onBegin,
+        onProgress,
       );
     }
 
-    return (await model.update(item.id, audio)) ? audio : null;
+    return (await model.updateAudio(item.id, audio)) ? audio : null;
+  } catch {}
+
+  return false;
+};
+
+export const downloadThumbnail = async item => {
+  let thumbnail = null;
+
+  try {
+    const model = new Model();
+    const isConnected = await SettingsService.isConnected();
+
+    if (!isConnected) {
+      return false;
+    }
+
+    if (item.server_thumbnail) {
+      thumbnail = await utils.downloadImage(
+        `${resourceThumbnailUrl}${item.server_thumbnail}`,
+      );
+    }
+
+    return (await model.updateThumbnail(item.id, thumbnail)) ? image : null;
+  } catch {}
+
+  return false;
+};
+
+export const downloadImage = async item => {
+  let image = null;
+
+  try {
+    const model = new Model();
+    const isConnected = await SettingsService.isConnected();
+
+    if (!isConnected) {
+      return false;
+    }
+
+    if (item.server_image) {
+      image = await utils.downloadImage(
+        `${resourceImageUrl}${item.server_image}`,
+      );
+    }
+
+    return (await model.updateImage(item.id, image)) ? image : null;
   } catch {}
 
   return false;
@@ -126,9 +162,11 @@ const handleGet = async id => {
         story_category_id: record.story_category_id,
         title: record.title,
         thumbnail: record.thumbnail,
+        server_thumbnail: record.server_thumbnail,
         image: record.image,
-        server_audio: record.server_audio,
+        server_image: record.server_image,
         audio: record.audio,
+        server_audio: record.server_audio,
       };
     }
   } catch {}
@@ -144,24 +182,13 @@ const handleGetServer = async id => {
 
     if (result?.item) {
       let thumbnail = result.item.thumbnail;
-      let image = result.item.image;
-
-      if (thumbnail) {
-        thumbnail = await utils.downloadImage(
-          `${resourceThumbnailUrl}${thumbnail}`,
-        );
-      }
-
-      if (image) {
-        image = await utils.downloadImage(`${resourceImageUrl}${image}`);
-      }
 
       await model.insert(
         id,
         result.item.story_category_id,
         result.item.title,
-        thumbnail,
-        image,
+        result.item.thumbnail,
+        result.item.image,
         result.item.audio,
       );
 
@@ -169,10 +196,12 @@ const handleGetServer = async id => {
         id: result.item.id,
         story_category_id: result.item.story_category_id,
         title: result.item.title,
-        thumbnail,
-        image,
-        server_audio: result.item.audio,
+        thumbnail: null,
+        server_thumbnail: result.item.thumbnail,
+        image: null,
+        server_image: result.item.image,
         audio: null,
+        server_audio: result.item.audio,
       };
     }
   } catch {}
@@ -188,17 +217,19 @@ const handleGetItems = async (storyCategroyId, page) => {
     const records = await model.getItems(storyCategroyId, page);
 
     if (records) {
-      records.forEach(record => {
+      for (let i = 0; i < records.length; i++) {
         items.push({
-          id: record.server_story_id,
-          story_category_id: record.story_category_id,
-          title: record.title,
-          thumbnail: record.thumbnail,
-          image: record.image,
-          server_audio: record.server_audio,
-          audio: record.audio,
+          id: records[i].server_story_id,
+          story_category_id: records[i].story_category_id,
+          title: records[i].title,
+          thumbnail: records[i].thumbnail,
+          server_thumbnail: records[i].server_thumbnail,
+          image: records[i].image,
+          server_image: records[i].server_image,
+          audio: records[i].audio,
+          server_audio: records[i].server_audio,
         });
-      });
+      }
     }
   } catch {}
 
@@ -214,41 +245,30 @@ const handleGetServerItems = async (storyCategroyId, page) => {
     const result = await entity.paginate(storyCategroyId, page);
 
     if (result?.items) {
-      result?.items.forEach(async item => {
-        let thumbnail = item.thumbnail;
-        let image = item.image;
-
-        if (thumbnail) {
-          thumbnail = await utils.downloadImage(
-            `${resourceThumbnailUrl}${thumbnail}`,
-          );
-        }
-
-        if (image) {
-          image = await utils.downloadImage(`${resourceImageUrl}${image}`);
-        }
-
-        if (!(await model.getItemByServerId(item.id))) {
+      for (let i = 0; i < result.items?.length; i++) {
+        if (!(await model.getItemByServerId(result.items[i].id))) {
           await model.insert(
-            item.id,
-            item.story_category_id,
-            item.title,
-            thumbnail,
-            image,
-            item.audio,
+            result.items[i].id,
+            result.items[i].story_category_id,
+            result.items[i].title,
+            result.items[i].thumbnail,
+            result.items[i].image,
+            result.items[i].audio,
           );
         }
 
         items.push({
-          id: item.id,
-          story_category_id: item.story_category_id,
-          title: item.title,
-          thumbnail: thumbnail,
-          image: image,
-          server_audio: item.audio,
+          id: result.items[i].id,
+          story_category_id: result.items[i].story_category_id,
+          title: result.items[i].title,
+          thumbnail: null,
+          server_thumbnail: result.items[i].thumbnail,
+          image: null,
+          server_image: result.items[i].image,
           audio: null,
+          server_audio: result.items[i].audio,
         });
-      });
+      }
     }
   } catch {}
 

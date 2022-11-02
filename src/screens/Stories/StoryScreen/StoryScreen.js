@@ -14,14 +14,19 @@ import {useTheme} from '../../../hooks';
 import {PanelScreen} from '../../';
 import {StoryItemService, StoryService} from '../../../services';
 import {Screens, StoryItemType} from '../../../constants';
-import {SoundPlayer, utils} from '../../../utils';
+import {utils} from '../../../utils';
 import images from '../../../theme/images';
+import {AudioPlayer, Tooltip} from '../../../components';
+import CircularProgress from 'react-native-circular-progress-indicator';
 
 const StoryScreen = ({route, navigation}) => {
   const [item, setItem] = useState(false);
   const [audio, setAudio] = useState(null);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const {colors} = useTheme();
-  const {id} = route.params;
+  const id = route?.params?.id;
   const {SIZES, FONTS} = globalStyles;
   const CALLBACK_PAGE = Screens.STORIES_LIST;
 
@@ -34,7 +39,17 @@ const StoryScreen = ({route, navigation}) => {
       paddingHorizontal: SIZES.padding3,
       paddingVertical: SIZES.padding3,
     },
-    volumeIcon: [globalStyles.backHeaderIcon, {tintColor: colors.text}],
+    soundTrackIcon: [
+      globalStyles.backHeaderIcon,
+      {width: 30, height: 30, tintColor: colors.text},
+    ],
+    progressContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: 35,
+      height: 35,
+    },
     imageBackground: {
       width: '100%',
       height: 150,
@@ -83,14 +98,6 @@ const StoryScreen = ({route, navigation}) => {
   }, [item]);
 
   useEffect(() => {
-    if (audio) {
-      player = new SoundPlayer(`file://${audio}`);
-
-      player.playSound();
-    }
-  }, [audio]);
-
-  useEffect(() => {
     getItem();
   }, []);
 
@@ -118,91 +125,138 @@ const StoryScreen = ({route, navigation}) => {
     }
 
     setItem(data);
+
+    if (data?.audio) {
+      setAudio(data.audio);
+    }
   };
 
   const getAudio = async () => {
-    const result = await StoryService.downloadAudioItem(item);
+    if (!item.audio) {
+      setShowTooltip(true);
+      setDownloading(true);
 
-    if (result) {
-      setAudio(result);
+      const result = await StoryService.downloadAudioItem(item, onProgress);
+
+      setDownloading(false);
+
+      if (result) {
+        setAudio(result);
+      }
     }
+  };
+
+  const onProgress = result => {
+    console.log(result);
+    setProgress(parseInt(result.progress));
   };
 
   const renderLeftContainer = () => (
     <View>
       <TouchableOpacity onPress={() => getAudio()}>
-        <Image source={images.volume} style={styles.volumeIcon}></Image>
+        {downloading && (
+          <View style={styles.progressContainer}>
+            <CircularProgress
+              radius={15}
+              value={progress}
+              inActiveStrokeColor={colors.border}
+              inActiveStrokeOpacity={0.2}
+              showProgressValue={false}
+            />
+          </View>
+        )}
+        {!downloading && (
+          <Image
+            source={images.soundtrack}
+            style={styles.soundTrackIcon}></Image>
+        )}
       </TouchableOpacity>
     </View>
   );
 
   return (
-    <PanelScreen
-      navigation={navigation}
-      headerTitle={item?.title ?? ''}
-      leftContainer={() => renderLeftContainer()}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View>
-          {item?.image && (
-            <ImageBackground
-              style={styles.imageBackground}
-              source={{
-                uri: `file://${item?.image}`,
-              }}
-              resizeMode="stretch"></ImageBackground>
-          )}
-          <View style={styles.container}>
-            {item?.thumbnail && (
-              <Image
-                style={styles.image}
+    <>
+      <Tooltip
+        text={'12 سیتا یستنا سنیتا ستیا 3 KB'}
+        top={35}
+        left={8}
+        show={showTooltip}
+        onFinished={() => setShowTooltip(false)}
+      />
+      <PanelScreen
+        navigation={navigation}
+        headerTitle={item?.title ?? ''}
+        leftContainer={() => renderLeftContainer()}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          style={{marginBottom: audio ? 125 : 0}}>
+          <View>
+            {item?.image && (
+              <ImageBackground
+                style={styles.imageBackground}
                 source={{
-                  uri: `file://${item?.thumbnail}`,
+                  uri: `file://${item?.image}`,
                 }}
-                resizeMode="center"
-              />
+                resizeMode="stretch"></ImageBackground>
             )}
-            <View style={styles.titleContainer}>
-              <Text style={styles.title}>
-                {utils.en2faDigits(item?.title) ?? ''}
-              </Text>
+            <View style={styles.container}>
+              {item?.thumbnail && (
+                <Image
+                  style={styles.image}
+                  source={{
+                    uri: `file://${item?.thumbnail}`,
+                  }}
+                  resizeMode="center"
+                />
+              )}
+              <View style={styles.titleContainer}>
+                <Text style={styles.title}>
+                  {item?.title ? utils.en2faDigits(item?.title) : ''}
+                </Text>
+              </View>
+              {item?.storyItems?.map((item, index) => (
+                <React.Fragment key={index}>
+                  {item.type === StoryItemType.TEXT_EN && (
+                    <View style={styles.txtContentContainer}>
+                      <Text style={styles.txtEnContent}>
+                        {item?.content ?? ''}
+                      </Text>
+                    </View>
+                  )}
+                  {item.type === StoryItemType.TEXT_FA && (
+                    <View style={styles.txtContentContainer}>
+                      <Text style={styles.txtFaContent}>
+                        {item?.content ? utils.en2faDigits(item.content) : ''}
+                      </Text>
+                    </View>
+                  )}
+                  {item.type === StoryItemType.IMAGE && item?.content && (
+                    <View style={styles.imageContentContainer}>
+                      <Image
+                        style={{
+                          ...styles.imageContent,
+                          width: item.width,
+                          height: item.height,
+                        }}
+                        source={{
+                          uri: `file://${item?.content}`,
+                        }}
+                        resizeMode="stretch"
+                      />
+                    </View>
+                  )}
+                </React.Fragment>
+              ))}
             </View>
-            {item?.storyItems?.map((item, index) => (
-              <React.Fragment key={index}>
-                {item.type === StoryItemType.TEXT_EN && (
-                  <View style={styles.txtContentContainer}>
-                    <Text style={styles.txtEnContent}>
-                      {item?.content ?? ''}
-                    </Text>
-                  </View>
-                )}
-                {item.type === StoryItemType.TEXT_FA && (
-                  <View style={styles.txtContentContainer}>
-                    <Text style={styles.txtFaContent}>
-                      {item?.content ? utils.en2faDigits(item.content) : ''}
-                    </Text>
-                  </View>
-                )}
-                {item.type === StoryItemType.IMAGE && item?.content && (
-                  <View style={styles.imageContentContainer}>
-                    <Image
-                      style={{
-                        ...styles.imageContent,
-                        width: item.width,
-                        height: item.height,
-                      }}
-                      source={{
-                        uri: `file://${item?.content}`,
-                      }}
-                      resizeMode="stretch"
-                    />
-                  </View>
-                )}
-              </React.Fragment>
-            ))}
           </View>
+        </ScrollView>
+      </PanelScreen>
+      {audio && (
+        <View>
+          <AudioPlayer filename={audio} containerStyle={{}} />
         </View>
-      </ScrollView>
-    </PanelScreen>
+      )}
+    </>
   );
 };
 

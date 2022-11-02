@@ -26,9 +26,7 @@ export const insertItem = async item => {
     }
 
     if (item.type === StoryItemType.IMAGE && item.content) {
-      item.content = await utils.downloadImage(
-        `${resourceUrl}/${item.content}`,
-      );
+      item.content = await utils.downloadImage(`${resourceUrl}${item.content}`);
     }
 
     return await model.insert(item.id, item.story_id, item.type, item.content);

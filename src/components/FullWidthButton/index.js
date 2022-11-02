@@ -1,20 +1,26 @@
 import {View, Text, TouchableOpacity} from 'react-native';
 import React from 'react';
 
-import * as styles from '../../theme/style';
+import * as globalStyles from '../../theme/style';
 import {useTheme} from '../../hooks';
 
 const FullWidthButton = ({text, onPress}) => {
   const {colors} = useTheme();
 
   return (
-    <TouchableOpacity style={styles.fullWidthButtonConainer} onPress={onPress}>
+    <TouchableOpacity
+      style={globalStyles.fullWidthButtonConainer}
+      onPress={onPress}>
       <View
         style={[
-          styles.fullWidthButtonWrapper,
+          globalStyles.fullWidthButtonWrapper,
           {backgroundColor: colors.sidebarBackground},
         ]}>
-        <Text style={[styles.fullWidthButtonText, {color: colors.sidebarText}]}>
+        <Text
+          style={[
+            globalStyles.fullWidthButtonText,
+            {color: colors.sidebarText},
+          ]}>
           {text}
         </Text>
       </View>

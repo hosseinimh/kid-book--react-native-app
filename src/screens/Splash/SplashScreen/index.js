@@ -4,13 +4,14 @@ import {useDispatch} from 'react-redux';
 import Lottie from 'lottie-react-native';
 
 import * as styles from '../../../theme/style';
-import {Screens} from '../../../constants';
 import {Settings} from '../../../storage/models';
-import {LoginService} from '../../../services';
+import {DashboardService, LoginService} from '../../../services';
 import {getHomeItems} from '../../../storage/state/home/homeActions';
+import {Screens} from '../../../constants';
 
 const SplashScreen = ({navigation}) => {
-  const [initialized, setInitialized] = useState(0);
+  const [initialized, setInitialized] = useState(false);
+  const [finished, setFinished] = useState(false);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -20,19 +21,20 @@ const SplashScreen = ({navigation}) => {
   const initialize = async () => {
     const settings = new Settings();
 
+    await settings.createTable();
     await settings.updateToken(null);
     await LoginService.login();
 
-    dispatch(getHomeItems());
+    dispatch(getHomeItems(await DashboardService.getItems()));
 
-    setInitialized(prev => prev + 1);
+    setInitialized(true);
   };
 
   useEffect(() => {
-    if (initialized === 2) {
+    if (initialized && finished) {
       navigation.navigate(Screens.HOME);
     }
-  }, [initialized]);
+  }, [initialized, finished]);
 
   return (
     <View style={styles.splashScreenContainer}>
@@ -43,7 +45,7 @@ const SplashScreen = ({navigation}) => {
         speed={0.75}
         style={styles.splashScreenContainer}
         onAnimationFinish={() => {
-          setInitialized(prev => prev + 1);
+          setFinished(true);
         }}
       />
     </View>

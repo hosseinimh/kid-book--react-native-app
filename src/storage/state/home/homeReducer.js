@@ -1,10 +1,10 @@
 import * as homeActions from './homeActions';
 
 const initialState = {
-  storyCategories: null,
-  authors: null,
-  translators: null,
-  speakers: null,
+  storyCategories: [],
+  authors: [],
+  translators: [],
+  speakers: [],
 };
 
 const homeReducer = (state = initialState, {type, payload}) => {

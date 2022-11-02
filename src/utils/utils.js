@@ -91,6 +91,9 @@ const en2faDigits = s =>
     ?.toString()
     .replace(/[0-9]/g, w => String.fromCharCode(w.charCodeAt(0) + 1728));
 
+const secondsToTimespan = (seconds, end = 22) =>
+  new Date(seconds * 1000)?.toISOString()?.substring(14, end);
+
 const checkPermission = async () => {
   const granted = await PermissionsAndroid.request(
     PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
@@ -107,25 +110,45 @@ const checkPermission = async () => {
   return false;
 };
 
-const downloadAsync = async (url, filename) => {
+const downloadAsync = async (url, filename, onBegin, onProgress) => {
   let i = 0;
   let result = null;
 
   do {
     i++;
-    result = await handleDownloadAsync(url, filename);
+    result = await handleDownloadAsync(url, filename, onBegin, onProgress);
   } while (i < 10 && !result);
 
   return result;
 };
 
-const handleDownloadAsync = async (url, filename) => {
+const handleDownloadAsync = async (
+  url,
+  filename,
+  onBegin = null,
+  onProgress = null,
+) => {
   try {
+    let result;
     filename = `${RNFS.DocumentDirectoryPath}/${filename}`;
-    const result = await RNFS.downloadFile({
-      fromUrl: url,
-      toFile: filename,
-    }).promise;
+
+    if (onProgress && typeof onProgress === 'function') {
+      result = await RNFS.downloadFile({
+        fromUrl: url,
+        toFile: filename,
+        begin: res => onBegin(res),
+        progress: res => {
+          onProgress({
+            percent: parseInt((res.bytesWritten / res.contentLength) * 100),
+          });
+        },
+      }).promise;
+    } else {
+      result = await RNFS.downloadFile({
+        fromUrl: url,
+        toFile: filename,
+      }).promise;
+    }
 
     if (result && result.bytesWritten > 0 && result.statusCode === 200) {
       return filename;
@@ -141,10 +164,18 @@ const downloadImage = async url => {
   return await downloadAsync(url, filename);
 };
 
-const downloadAudio = async url => {
+const downloadAudio = async (url, onBegin, onProgress) => {
   const filename = new Date().valueOf() + '.mp3';
 
-  return await downloadAsync(url, filename);
+  return await downloadAsync(url, filename, onBegin, onProgress);
+};
+
+const fileExists = async filename => {
+  try {
+    return await RNFS.exists(filename);
+  } catch {}
+
+  return false;
 };
 
 const deleteFile = async filename => {
@@ -197,13 +228,25 @@ const formatBytes = (bytes, decimals = 2) => {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 };
 
+const uniqueArray = items => {
+  try {
+    return items.filter(
+      (value, index, array) => array.indexOf(value) === index,
+    );
+  } catch {}
+
+  return [];
+};
+
 const utils = {
   tabScreenTitle,
   tabText,
   getDateTime,
   isJsonString,
   en2faDigits,
+  secondsToTimespan,
   downloadAsync,
+  fileExists,
   deleteFile,
   fileInfo,
   downloadImage,
@@ -211,6 +254,7 @@ const utils = {
   getImageSize,
   prepareStr,
   formatBytes,
+  uniqueArray,
 };
 
 export default utils;

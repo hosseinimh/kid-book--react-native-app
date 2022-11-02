@@ -35,10 +35,6 @@ export const insertItem = async item => {
       return false;
     }
 
-    if (item.avatar) {
-      item.avatar = await utils.downloadImage(`${resourceUrl}${item.avatar}`);
-    }
-
     return await model.insert(
       item.id,
       item.name,
@@ -46,6 +42,27 @@ export const insertItem = async item => {
       item.description,
       item.avatar,
     );
+  } catch {}
+
+  return false;
+};
+
+export const downloadAvatar = async item => {
+  let avatar = null;
+
+  try {
+    const model = new Model();
+    const isConnected = await SettingsService.isConnected();
+
+    if (!isConnected) {
+      return false;
+    }
+
+    if (item.server_avatar) {
+      avatar = await utils.downloadImage(`${resourceUrl}${item.server_avatar}`);
+    }
+
+    return (await model.updateAvatar(item.id, avatar)) ? avatar : null;
   } catch {}
 
   return false;
@@ -89,6 +106,7 @@ const handleGet = async id => {
         family: record.family,
         description: record.description,
         avatar: record.avatar,
+        server_avatar: record.server_avatar,
       };
     }
   } catch {}
@@ -103,18 +121,12 @@ const handleGetServer = async id => {
     let result = await entity.get(id);
 
     if (result?.item) {
-      let avatar = result.item.avatar;
-
-      if (avatar) {
-        avatar = await utils.downloadImage(`${resourceUrl}${avatar}`);
-      }
-
       await model.insert(
-        id,
+        result.item.id,
         result.item.name,
         result.item.family,
         result.item.description,
-        avatar,
+        result.item.avatar,
       );
 
       return {
@@ -122,7 +134,8 @@ const handleGetServer = async id => {
         name: result.item.name,
         family: result.item.family,
         description: result.item.description,
-        avatar: avatar,
+        avatar: null,
+        server_avatar: result.item.avatar,
       };
     }
   } catch {}
@@ -138,15 +151,16 @@ const handleGetItems = async page => {
     const records = await model.getItems(page);
 
     if (records) {
-      records.forEach(record => {
+      for (let i = 0; i < records.length; i++) {
         items.push({
-          id: record.server_translator_id,
-          name: record.name,
-          family: record.family,
-          description: record.description,
-          avatar: record.avatar,
+          id: records[i].server_translator_id,
+          name: records[i].name,
+          family: records[i].family,
+          description: records[i].description,
+          avatar: records[i].avatar,
+          server_avatar: records[i].server_avatar,
         });
-      });
+      }
     }
   } catch {}
 
@@ -162,31 +176,26 @@ const handleGetServerItems = async page => {
     const result = await entity.paginate(page);
 
     if (result?.items) {
-      result?.items.forEach(async item => {
-        let avatar = item.avatar;
-
-        if (avatar) {
-          avatar = await utils.downloadImage(`${resourceUrl}${avatar}`);
-        }
-
-        if (!(await model.getItemByServerId(item.id))) {
+      for (let i = 0; i < result.items?.length; i++) {
+        if (!(await model.getItemByServerId(result.items[i].id))) {
           await model.insert(
-            item.id,
-            item.name,
-            item.family,
-            item.description,
-            avatar,
+            result.items[i].id,
+            result.items[i].name,
+            result.items[i].family,
+            result.items[i].description,
+            result.items[i].avatar,
           );
         }
 
         items.push({
-          id: item.id,
-          name: item.name,
-          family: item.family,
-          description: item.description,
-          avatar: avatar,
+          id: result.items[i].id,
+          name: result.items[i].name,
+          family: result.items[i].family,
+          description: result.items[i].description,
+          avatar: null,
+          server_avatar: result.items[i].avatar,
         });
-      });
+      }
     }
   } catch {}
 

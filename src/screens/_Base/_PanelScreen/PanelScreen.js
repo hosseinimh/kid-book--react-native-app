@@ -8,6 +8,7 @@ import BaseScreen from '../_BaseScreen/BaseScreen';
 import images from '../../../theme/images';
 
 const PanelScreen = ({
+  containerStyle,
   navigation,
   navigateScreen,
   navigateParams,
@@ -23,7 +24,7 @@ const PanelScreen = ({
     image: [globalStyles.backHeaderIcon, {tintColor: colors.text}],
     container: [
       globalStyles.pageContainer,
-      {backgroundColor: colors.background},
+      {backgroundColor: colors.background, ...containerStyle},
     ],
     boxContainer: {
       backgroundColor: colors.primary,

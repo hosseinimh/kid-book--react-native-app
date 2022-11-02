@@ -1,9 +1,7 @@
-import {DashboardService} from '../../../services';
-
 export const GET_HOME_ITEMS = 'GET_HOME_ITEMS';
 
-export const getHomeItems = () => async dispatch => {
-  const result = await getItems();
+export const getHomeItems = res => async dispatch => {
+  const result = getItems(res);
 
   dispatch({
     type: GET_HOME_ITEMS,
@@ -11,10 +9,8 @@ export const getHomeItems = () => async dispatch => {
   });
 };
 
-const getItems = async () => {
+const getItems = result => {
   try {
-    const result = await DashboardService.getItems();
-
     if (
       result &&
       result.storyCategories?.length > 0 &&

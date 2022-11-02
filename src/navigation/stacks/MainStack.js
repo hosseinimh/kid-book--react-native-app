@@ -2,13 +2,14 @@ import {createStackNavigator} from '@react-navigation/stack';
 
 import {Screens} from '../../constants';
 import {
+  SplashScreen,
+  HomeScreen,
   AuthorScreen,
   AuthorsListScreen,
-  HomeScreen,
   SpeakerScreen,
   SpeakersListScreen,
-  SplashScreen,
   StoryScreen,
+  StoriesListScreen,
   TranslatorScreen,
   TranslatorsListScreen,
 } from '../../screens';
@@ -34,6 +35,11 @@ const MainStack = () => {
       <Stack.Screen
         name={Screens.STORY}
         component={StoryScreen}
+        options={defaultScreenOption}
+      />
+      <Stack.Screen
+        name={Screens.STORIES_LIST}
+        component={StoriesListScreen}
         options={defaultScreenOption}
       />
       <Stack.Screen

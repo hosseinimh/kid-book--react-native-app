@@ -3,6 +3,7 @@ import BaseScreen from './_Base/_BaseScreen/BaseScreen';
 import PanelScreen from './_Base/_PanelScreen/PanelScreen';
 import HomeScreen from './Home/HomeScreen/HomeScreen';
 import StoryScreen from './Stories/StoryScreen/StoryScreen';
+import StoriesListScreen from './Stories/StoriesListScreen/StoriesListScreen';
 import AuthorScreen from './Authors/AuthorScreen/AuthorScreen';
 import AuthorsListScreen from './Authors/AuthorsListScreen/AuthorsListScreen';
 import TranslatorScreen from './Translators/TranslatorScreen/TranslatorScreen';
@@ -16,6 +17,7 @@ export {
   PanelScreen,
   HomeScreen,
   StoryScreen,
+  StoriesListScreen,
   AuthorScreen,
   AuthorsListScreen,
   TranslatorScreen,

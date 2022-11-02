@@ -16,7 +16,7 @@ import images from '../../../theme/images';
 import {Box, Sidebar} from '../../../components';
 import {utils} from '../../../utils';
 import {HomeTabScreen, SettingsTabScreen, AboutTabScreen} from './tabScreens';
-import {TAB_SCREENS, TABS, Screens} from '../../../constants';
+import {TAB_SCREENS, TABS} from '../../../constants';
 import {
   setParamsAction,
   setTabAction,
@@ -26,7 +26,7 @@ import * as globalStyles from '../../../theme/style';
 import {Header} from '../../../components';
 import {useTheme} from '../../../hooks';
 import {homeTabScreen} from '../../../constants/strings';
-import {LoginService} from '../../../services';
+import {DashboardService, LoginService} from '../../../services';
 import {getHomeItems} from '../../../storage/state/home/homeActions';
 
 const DURATION = 300;
@@ -40,7 +40,12 @@ const HomeScreen = ({navigation}) => {
   const [translators, setTranslators] = useState([]);
   const [speakers, setSpeakers] = useState([]);
   const {colors} = useTheme();
+  let interval;
   const styles = StyleSheet.create({
+    baseContainer: {
+      ...globalStyles.screenContainer,
+      backgroundColor: colors.background,
+    },
     notInitializedBoxContainer: {
       backgroundColor: colors.primary,
       height: 50,
@@ -52,6 +57,12 @@ const HomeScreen = ({navigation}) => {
       justifyContent: 'center',
       alignItems: 'center',
       flex: 1,
+    },
+    loadingContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      height: globalStyles.SIZES.height,
     },
   });
 
@@ -102,16 +113,16 @@ const HomeScreen = ({navigation}) => {
   }, [homeState]);
 
   useEffect(() => {
-    initialize();
+    interval = setInterval(() => {
+      if (initialized) {
+        initialize();
+      }
+    }, 600000);
 
     return () => {
       clearInterval(interval);
     };
   }, []);
-
-  const interval = setInterval(() => {
-    initialize();
-  }, 600000);
 
   const initialize = async () => {
     await LoginService.login();
@@ -121,7 +132,7 @@ const HomeScreen = ({navigation}) => {
     setInitialized(null);
     await initialize();
 
-    dispatch(getHomeItems());
+    dispatch(getHomeItems(await DashboardService.getItems()));
     dispatch(setParamsAction({}));
   };
 
@@ -246,15 +257,19 @@ const HomeScreen = ({navigation}) => {
   const renderTabScreen = () => {
     switch (tabScreen) {
       case TAB_SCREENS.Home:
-        return (
-          <HomeTabScreen
-            navigation={navigation}
-            storyCategories={storyCategories}
-            authors={authors}
-            translators={translators}
-            speakers={speakers}
-          />
-        );
+        if (initialized) {
+          return (
+            <HomeTabScreen
+              navigation={navigation}
+              storyCategories={storyCategories}
+              authors={authors}
+              translators={translators}
+              speakers={speakers}
+            />
+          );
+        } else if (initialized === false) {
+          return renderNotInitialized();
+        }
       case TAB_SCREENS.Settings:
         return <SettingsTabScreen />;
       case TAB_SCREENS.About:
@@ -266,27 +281,27 @@ const HomeScreen = ({navigation}) => {
 
   const renderNotInitialized = () => {
     return (
-      <Box containerStyle={styles.notInitializedBoxContainer}>
-        <View style={styles.container}>
-          <View>
-            <Text style={styles.notInitializedText}>
-              {homeTabScreen.notInitialized}
-            </Text>
+      <ScrollView
+        refreshControl={
+          <RefreshControl colors={[colors.success]} onRefresh={reload} />
+        }>
+        <Box containerStyle={styles.notInitializedBoxContainer}>
+          <View style={styles.container}>
+            <View>
+              <Text style={styles.notInitializedText}>
+                {homeTabScreen.notInitialized}
+              </Text>
+            </View>
           </View>
-        </View>
-      </Box>
+        </Box>
+      </ScrollView>
     );
   };
 
   const renderLoading = () => {
     return (
       <ScrollView
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-          height: globalStyles.SIZES.height,
-        }}
+        style={styles.loadingContainer}
         refreshControl={
           <RefreshControl refreshing={true} colors={[colors.success]} />
         }></ScrollView>
@@ -298,16 +313,14 @@ const HomeScreen = ({navigation}) => {
       <Sidebar />
       <Animated.View
         style={[
-          globalStyles.screenContainer,
+          styles.baseContainer,
           {
-            backgroundColor: colors.background,
             borderRadius: showMenu ? 15 : 0,
             transform: [{scale: scaleValue}, {translateX: offsetValue}],
           },
         ]}>
         {renderHeader()}
-        {initialized && renderTabScreen()}
-        {initialized === false && renderNotInitialized()}
+        {initialized !== null && renderTabScreen()}
         {initialized === null && renderLoading()}
       </Animated.View>
     </BaseScreen>

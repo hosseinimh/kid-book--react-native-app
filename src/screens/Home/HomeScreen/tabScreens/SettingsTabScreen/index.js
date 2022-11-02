@@ -19,14 +19,12 @@ import {utils} from '../../../../../utils';
 import SqliteConnection from '../../../../../storage/models/SqliteConnection';
 import {setParamsAction} from '../../../../../storage/state/layout/layoutActions';
 
-const SettingsTabScreen = ({navigation}) => {
-  const [item, setItem] = useState(null);
+const SettingsTabScreen = () => {
   const [volume, setVolume] = useState(0);
   const dispatch = useDispatch();
   const {colors} = useTheme();
 
   const {SIZES, FONTS} = globalStyles;
-  const CALLBACK_PAGE = Screens.HOME;
 
   const styles = StyleSheet.create({
     container: {
@@ -50,12 +48,6 @@ const SettingsTabScreen = ({navigation}) => {
       },
     ],
   });
-
-  useEffect(() => {
-    if (item === false) {
-      navigation.navigate(CALLBACK_PAGE);
-    }
-  }, [item]);
 
   useEffect(() => {
     getFileSizes();
@@ -93,11 +85,7 @@ const SettingsTabScreen = ({navigation}) => {
   };
 
   return (
-    <PanelScreen
-      navigation={navigation}
-      navigateScreen={Screens.HOME}
-      navigateParams={{refresh: true}}
-      headerShown={false}>
+    <PanelScreen headerShown={false}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.container}>
           <View style={styles.volumeContainer}>

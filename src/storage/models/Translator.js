@@ -6,7 +6,7 @@ const tblName = 'tbl_translators';
 
 function createTableSqls() {
   let dropSql = `DROP TABLE IF EXISTS ${tblName}`;
-  let createSql = `CREATE TABLE IF NOT EXISTS ${tblName} (id INTEGER PRIMARY KEY AUTOINCREMENT,server_translator_id INTEGER,name VARCHAR(255),family VARCHAR(255),description TEXT,avatar VARCHAR(255),created_at VARCHAR(20),updated_at VARCHAR(20))`;
+  let createSql = `CREATE TABLE IF NOT EXISTS ${tblName} (id INTEGER PRIMARY KEY AUTOINCREMENT,server_translator_id INTEGER,name VARCHAR(255),family VARCHAR(255),description TEXT,avatar VARCHAR(255),server_avatar VARCHAR(255),created_at VARCHAR(20),updated_at VARCHAR(20))`;
 
   return {dropSql, createSql};
 }
@@ -36,16 +36,32 @@ class Translator {
     );
   };
 
-  insert = async (serverTranslatorId, name, family, description, avatar) => {
+  insert = async (
+    serverTranslatorId,
+    name,
+    family,
+    description,
+    serverAvatar,
+  ) => {
     let dateTime = utils.getDateTime();
 
     name = utils.prepareStr(name);
     family = utils.prepareStr(family);
     description = utils.prepareStr(description);
+    serverAvatar = utils.prepareStr(serverAvatar, null);
+
+    return await sqlite.execute(
+      `INSERT INTO ${tblName} (server_translator_id,name,family,description,avatar,server_avatar,created_at,updated_at) VALUES (${serverTranslatorId},${name},${family},${description},null,${serverAvatar},'${dateTime}',null)`,
+    );
+  };
+
+  updateAvatar = async (serverTranslatorId, avatar) => {
+    let dateTime = utils.getDateTime();
+
     avatar = utils.prepareStr(avatar, null);
 
     return await sqlite.execute(
-      `INSERT INTO ${tblName} (server_translator_id,name,family,description,avatar,created_at,updated_at) VALUES (${serverTranslatorId},${name},${family},${description},${avatar},'${dateTime}',null)`,
+      `UPDATE ${tblName} SET avatar=${avatar},updated_at='${dateTime}' WHERE server_translator_id=${serverTranslatorId}`,
     );
   };
 

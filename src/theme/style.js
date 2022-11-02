@@ -122,7 +122,7 @@ export const columnListItem = {
   display: 'flex',
   flexDirection: 'row-reverse',
   justifyContent: 'flex-start',
-  alignItems: 'flex-start',
+  alignItems: 'center',
   marginBottom: 5,
 };
 

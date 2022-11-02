@@ -14,11 +14,12 @@ import {PanelScreen} from '../../';
 import {translatorScreen as strings} from '../../../constants/strings';
 import {TranslatorService} from '../../../services';
 import {Screens} from '../../../constants';
+import {utils} from '../../../utils';
 
 const TranslatorScreen = ({route, navigation}) => {
   const [item, setItem] = useState(null);
   const {colors} = useTheme();
-  const {id} = route.params;
+  const id = route?.params?.id;
   const {SIZES, FONTS} = globalStyles;
   const CALLBACK_PAGE = Screens.TRANSLATORS_LIST;
 
@@ -82,12 +83,14 @@ const TranslatorScreen = ({route, navigation}) => {
             )}
             <View style={styles.nameContainer}>
               <Text style={styles.name}>
-                {item && `${item?.name} ${item?.family}`}
+                {item && utils.en2faDigits(`${item?.name} ${item?.family}`)}
               </Text>
             </View>
           </View>
           <View style={styles.descriptionContainer}>
-            <Text style={styles.textDescription}>{item?.description}</Text>
+            <Text style={styles.textDescription}>
+              {utils.en2faDigits(item?.description)}
+            </Text>
           </View>
         </View>
       </ScrollView>

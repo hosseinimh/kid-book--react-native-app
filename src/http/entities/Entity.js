@@ -134,7 +134,6 @@ class Entity {
 
   async logout() {
     try {
-      console.log('logout');
       if (await LoginService.login()) {
         switch (this.method) {
           case 'post':

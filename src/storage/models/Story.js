@@ -6,7 +6,7 @@ const tblName = 'tbl_stories';
 
 function createTableSqls() {
   let dropSql = `DROP TABLE IF EXISTS ${tblName}`;
-  let createSql = `CREATE TABLE IF NOT EXISTS ${tblName} (id INTEGER PRIMARY KEY AUTOINCREMENT,server_story_id INTEGER,story_category_id INTEGER,title VARCHAR(255),thumbnail VARCHAR(255),image VARCHAR(255),audio VARCHAR(255),server_audio VARCHAR(255),created_at VARCHAR(20),updated_at VARCHAR(20))`;
+  let createSql = `CREATE TABLE IF NOT EXISTS ${tblName} (id INTEGER PRIMARY KEY AUTOINCREMENT,server_story_id INTEGER,story_category_id INTEGER,title VARCHAR(255),thumbnail VARCHAR(255),server_thumbnail VARCHAR(255),server_image VARCHAR(255),image VARCHAR(255),audio VARCHAR(255),server_audio VARCHAR(255),created_at VARCHAR(20),updated_at VARCHAR(20))`;
 
   return {dropSql, createSql};
 }
@@ -40,23 +40,43 @@ class Story {
     serverStoryId,
     storyCategoryId,
     title,
-    thumbnail,
-    image,
+    serverThumbnail,
+    serverImage,
     serverAudio,
   ) => {
     let dateTime = utils.getDateTime();
 
     title = utils.prepareStr(title);
-    thumbnail = utils.prepareStr(thumbnail, null);
-    image = utils.prepareStr(image, null);
+    serverThumbnail = utils.prepareStr(serverThumbnail, null);
+    serverImage = utils.prepareStr(serverImage, null);
     serverAudio = utils.prepareStr(serverAudio, null);
 
     return await sqlite.execute(
-      `INSERT INTO ${tblName} (server_story_id,story_category_id,title,thumbnail,image,audio,server_audio,created_at,updated_at) VALUES (${serverStoryId},${storyCategoryId},${title},${thumbnail},${image},null,${serverAudio},'${dateTime}',null)`,
+      `INSERT INTO ${tblName} (server_story_id,story_category_id,title,thumbnail,server_thumbnail,image,server_image,audio,server_audio,created_at,updated_at) VALUES (${serverStoryId},${storyCategoryId},${title},null,${serverThumbnail},null,${serverImage},null,${serverAudio},'${dateTime}',null)`,
     );
   };
 
-  update = async (serverStoryId, audio) => {
+  updateThumbnail = async (serverStoryId, thumbnail) => {
+    let dateTime = utils.getDateTime();
+
+    thumbnail = utils.prepareStr(thumbnail, null);
+
+    return await sqlite.execute(
+      `UPDATE ${tblName} SET thumbnail=${thumbnail},updated_at='${dateTime}' WHERE server_story_id=${serverStoryId}`,
+    );
+  };
+
+  updateImage = async (serverStoryId, image) => {
+    let dateTime = utils.getDateTime();
+
+    image = utils.prepareStr(image, null);
+
+    return await sqlite.execute(
+      `UPDATE ${tblName} SET image=${image},updated_at='${dateTime}' WHERE server_story_id=${serverStoryId}`,
+    );
+  };
+
+  updateAudio = async (serverStoryId, audio) => {
     let dateTime = utils.getDateTime();
 
     audio = utils.prepareStr(audio, null);
